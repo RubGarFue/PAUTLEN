@@ -444,31 +444,152 @@ void ifthenelse_inicio(FILE * fpasm, int exp_es_variable, int etiqueta) {
     if (exp_es_variable == 1) {
         fprintf(fpasm, "    mov eax, [eax]\n");
     }
+    fprintf(fpasm, "    cmp eax, 0\n");
 
-    fprintf();
+    /*si es cero se salta al final de la rama then*/
+    fprintf(fpasm, "    je near fin_then_%d\n", etiqueta);
 }
-void if_then_inicio(FILE * fpasm, int exp_es_variable, int etiqueta);
-void ifthenelse_fin_then( FILE * fpasm, int etiqueta);
+void if_then_inicio(FILE * fpasm, int exp_es_variable, int etiqueta) {
+    /* se saca de la pila el valor de la expresión */
+    fprintf(fpasm, "    pop eax\n");
+    if (exp_es_variable == 1) {
+        fprintf(fpasm, "    mov eax, [eax]\n");
+    }
+    fprintf(fpasm, "    cmp eax, 0\n");
+
+    /*si es cero se salta al final de la rama then*/
+    fprintf(fpasm, "    je near fin_then_%d\n", etiqueta);
+}
+void ifthenelse_fin_then( FILE * fpasm, int etiqueta) {
+    /*se salta al fin del ifthenelse, es decir, la rama else*/
+    fprintf(fpasm, "    jmp near fin_ifelse_%s\n", etiqueta);
+
+    /*se escribe la etiqueta de fin de la rama then*/
+    fprintf(fpasm, "    fin_then_%d\n", etiqueta);
+}
 
 
-
-void ifthen_fin(FILE * fpasm, int etiqueta);
+void ifthen_fin(FILE * fpasm, int etiqueta) {
+    /*se imprime la etiqueta de final de bloque then*/
+    fprintf(fpasm, "    fin_then_%d\n", etiqueta);
+}
     
 
-void ifthenelse_fin( FILE * fpasm, int etiqueta);
+void ifthenelse_fin( FILE * fpasm, int etiqueta) {
+    /*se escribe la etiqueta del final de la estructura ifthenelse*/
+    fprintf(fpasm, "    fin_ifelse_%d\n", etiqueta);
+}
 
 void while_inicio(FILE * fpasm, int etiqueta) {
     fprintf(fpasm, "    inicio_while_%d:\n", etiqueta);
 }
-void while_exp_pila (FILE * fpasm, int exp_es_variable, int etiqueta);
-void while_fin( FILE * fpasm, int etiqueta);
+void while_exp_pila (FILE * fpasm, int exp_es_variable, int etiqueta) {
+    /*se saca de la cima de la pila el valor de la expresion que gobierna el bucle*/
+    fprintf(fpasm, "    pop eax\n");
 
-void escribir_elemento_vector(FILE * fpasm,char * nombre_vector, int tam_max, int exp_es_direccion);
+    if (exp_es_variable > 0) {
+        fprintf(fpasm, "    mov eax, [eax]\n");
+    }
+    fprintf(fpasm, "    cmp eax, 0\n");
 
-void declararFuncion(FILE * fd_asm, char * nombre_funcion, int num_var_loc);
-void retornarFuncion(FILE * fd_asm, int es_variable);
-void escribirParametro(FILE* fpasm, int pos_parametro, int num_total_parametros);
-void escribirVariableLocal(FILE *fpasm, int posicion_variable_local);
+    /*si es 0 se salta al final del while, habriamos terminado*/
+    fprintf(fpasm, "    je near fin_while_%d\n", etiqueta);
+}
 
-void operandoEnPilaAArgumento(FILE *fd_asm, int es_variable);
-void llamarFuncion(FILE * fd_asm, char* nombre_funcion, int num_argumentos);
+void while_fin( FILE * fpasm, int etiqueta) {
+    /*se salta de nuevo al principio del bucle para volver a evaluar la condicion de salida*/
+    fprintf(fpasm, "    jmp near inicio_while_%d\n", etiqueta);
+
+    /*se escribe la etiqueta de fin de bucle*/
+    fprintf(fpasm, "fin_while_%d\n", etiqueta);
+}
+
+void escribir_elemento_vector(FILE * fpasm,char * nombre_vector, int tam_max, int exp_es_direccion) {
+    /*se saca de la pila a un registro el valor del indice*/
+    fprintf(fpasm, "    pop dword eax\n");
+
+    /*haciendo lo que proceda en el caso de que sea una direccion (variable o equivalente) */
+    if (exp_es_direccion == 1) {
+        fprintf(fpasm, "    mov dword eax, [eax]\n");
+    }
+
+    /*se programa el control de errores en tiempo de ejecucion
+      si el indice es <0 se termina el programa, si no, continua*/
+    fprintf(fpasm, "    cmp eax, 0\n");
+
+    /*se supone que en la direccion fin_indice_fuera_rango se procesa este error en tiempo de ejecucion*/
+    fprintf(fpasm, "    jl near fin_indice_fuera_rango\n");
+
+    /*si el indice es > maximo permitido se termina el programa, si no, continua*/
+    /*el tamaño maximo se proporciona como argumento*/
+    fprintf(fpasm, "    cmp eax, %d\n", tam_max-1);
+    fprintf(fpasm, "    jg near fin_indice_fuera_rango\n");
+
+    /*una opcion es calcular con lea la direccion efectiva del elemento indexado tras calcularla
+      desplazando desde el inicio del vector el valor del indice*/
+    fprintf(fpasm, "    mov dword edx, _%s\n", nombre_vector);
+    fprintf(fpasm, "    lea eax, [edx + eax*4]\n"); /*direccion elemento indexado en eax*/
+    fprintf(fpasm, "    push dword eax\n"); /*direccion elemento indexado en cima pila*/
+}
+
+void declararFuncion(FILE * fd_asm, char * nombre_funcion, int num_var_loc) {
+    fprintf(fd_asm, "    _%s\n", nombre_funcion); /*etiqueta de inicio de la funcion*/
+    fprintf(fd_asm, "   push ebp\n");             /*preservacion de ebp/esp*/
+    fprintf(fd_asm, "   mov ebp, esp\n");
+    /*reserva de espacio para las variables lcoales en la pila*/
+    fprintf(fd_asm, "   sub esp, 4*%d\n", num_var_loc); 
+
+}
+void retornarFuncion(FILE * fd_asm, int es_variable) {
+
+    /*retorno de la funcion (el valor de la expresion esta en la pila y tiene que dejarse en eax*/
+    fprintf(fd_asm, "   pop eax\n"); 
+    if (es_variable == 1) {
+        fprintf(fd_asm, "   mov dword eax, [eax]\n");
+    }
+
+    /*restaurar el puntero de pila*/
+    fprintf(fd_asm, "   mov esp,ebp\n"); 
+    /*sacar de la pila ebp*/
+    fprintf(fd_asm, "   pop ebp\n");    
+    /*vuelve al programa llamante y saca de la pila la dir de retorno*/
+    fprintf(fd_asm, "   ret\n");         
+}
+void escribirParametro(FILE* fpasm, int pos_parametro, int num_total_parametros) {
+    int d_ebp;
+    d_ebp = 4*(1+(num_total_parametros-pos_parametro));
+
+    /*una alternativa es calcular la direccion efectiva con lea desplazando desde ebp*/
+    fprintf(fpasm, "    lea eax, [ebp + %d]\n", d_ebp); 
+    fprintf(fpasm, "    push dword eax\n");
+}
+void escribirVariableLocal(FILE *fpasm, int posicion_variable_local) {
+    int d_ebp;
+    d_ebp = 4*posicion_variable_local;
+
+    fprintf(fpasm, "    lea eax, [ebp - %d]\n", d_ebp);
+    fprintf(fpasm, "    push dword eax\n");
+
+}
+
+void operandoEnPilaAArgumento(FILE *fd_asm, int es_variable) {
+    if (es_variable == 1) {
+        /*en el caso de que en la pila tengamos una variable y no un valor*/
+        fprintf(fd_asm, "   pop eax\n"); 
+        
+        /*se saca, se accede al valor y se vuelve a introducir en la pila*/
+        fprintf(fd_asm, "   mov eax, [eax]\n"); 
+        fprintf(fd_asm, "   push eax\n");
+    }
+}
+void llamarFuncion(FILE * fd_asm, char* nombre_funcion, int num_argumentos) {
+    
+    /*se llama a la funcion*/
+    fprintf(fd_asm, "   call %s\n", nombre_funcion); 
+    
+    /*se limpia la pila de los argumentos usados en la llamada*/
+    fprintf(fd_asm, "   add esp, %d*4\n", num_argumentos);
+    
+    /*en nuestro lenguaje las llamadas a funciones son expresiones por lo que su retorno debe ser dejado en la pila*/
+    fprintf(fd_asm, "   push dword eax\n");
+}
