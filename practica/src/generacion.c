@@ -466,7 +466,7 @@ void ifthen_inicio(FILE *fpasm, int exp_es_variable, int etiqueta) {
 void ifthen_fin(FILE *fpasm, int etiqueta) {
     fprintf(fpasm, "    ; ifthen_fin\n");
     /*se imprime la etiqueta de final de bloque then*/
-    fprintf(fpasm, "    fin_then_%d\n", etiqueta);
+    fprintf(fpasm, "    fin_then_%d:\n", etiqueta);
 }
 
 void ifthenelse_fin_then( FILE * fpasm, int etiqueta) {
