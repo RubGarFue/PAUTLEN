@@ -3,12 +3,8 @@
         {
             "name": "Linux",
             "includePath": [
-<<<<<<< HEAD
-                "${default}"
-=======
                 "${default}",
-                "${workspaceFolder}/practica/include"
->>>>>>> b5b71869e26927520dee14f14f044d4bf0864ee5
+                "${workspaceFolder}/practica1/include"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
