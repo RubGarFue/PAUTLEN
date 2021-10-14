@@ -40,7 +40,7 @@ ej6: ej6.o generacion.o
 
 ej7: ej7.o generacion.o
 	$(CC) -o ej7 ej7.o ./obj/generacion.o
-	mv *¡ej7.o ./obj_ejs
+	mv ej7.o ./obj_ejs
 
 ej1.o: ./ejs/ej1.c ./include/generacion.h
 	$(CC) $(CFLAGS) -c ./ejs/ej1.c
