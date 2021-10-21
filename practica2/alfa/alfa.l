@@ -7,6 +7,10 @@ long yycol = 1;
 
 %}
 %option noyywrap
+ESPACIO [ \t]+
+SALTOLINEA \n|\n\r|\r
+COMENTARIO "//".*
+
 MAIN    "main"
 INT "int"
 BOOLEAN "boolean"
@@ -40,12 +44,18 @@ MENORIGUAL  "<="
 MAYORIGUAL  ">="
 MENOR   "<"
 MAYOR   ">"
-IDENTIFICADOR   [a-zA-Z][a-zA-Z0-9]*{0,99}
-CONSTANTE_ENTERA    [0-9]+
 TRUE    "true"
 FALSE   "false"
-ERROR   .
+IDENTIFICADOR   [a-zA-Z][a-zA-Z0-9]{0,99}
+IDENTIFICADOR_ERROR 
+
+CONSTANTE_ENTERA    [0-9]
+ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 %%
+{ESPACIO}   { yycol += yyleng; }
+{SALTOLINEA}    { yycol=0; yylin++; }
+{COMENTARIO}    { yycol=0; yylin++; }
+
 {MAIN}  { yycol += yyleng; return TOK_MAIN; }
 {INT}   { yycol += yyleng; return TOK_INT; }
 {BOOLEAN}   { yycol += yyleng; return TOK_BOOLEAN; }
@@ -63,7 +73,7 @@ ERROR   .
 {PARANTESISDERECHO} { yycol += yyleng; return TOK_PARENTESISDERECHO; }
 {CORCHETEIZQUIERDO} { yycol += yyleng; return TOK_CORCHETEIZQUIERDO; }
 {CORCHETEDERECHO}   { yycol += yyleng; return TOK_CORCHETEDERECHO; }
-{LLAVEIZQUIERDA}    { yycol += yyleng; return TOK_LLLAVEIZQUIERDA; }
+{LLAVEIZQUIERDA}    { yycol += yyleng; return TOK_LLAVEIZQUIERDA; }
 {LLAVEDERECHA}   { yycol += yyleng; return TOK_LLAVEDERECHA; }
 {ASIGNACION}    { yycol += yyleng; return TOK_ASIGNACION; }
 {MAS}   { yycol += yyleng; return TOK_MAS; }
@@ -79,13 +89,9 @@ ERROR   .
 {MAYORIGUAL}    { yycol += yyleng; return TOK_MAYORIGUAL; }
 {MENOR} { yycol += yyleng; return TOK_MENOR; }
 {MAYOR} { yycol += yyleng; return TOK_MAYOR; }
-{IDENTIFICADOR} { yycol += yyleng; return TOK_IDENTIFICADOR; }
-{CONSTANTE_ENTERA}   { yycol += yyleng; return TOK_CONSTANTE_ENTERA; }
 {TRUE}  { yycol += yyleng; return TOK_TRUE; }
 {FALSE} { yycol += yyleng; return TOK_FALSE; }
+{IDENTIFICADOR} { yycol += yyleng; return TOK_IDENTIFICADOR; }
+{CONSTANTE_ENTERA}   { yycol += yyleng; return TOK_CONSTANTE_ENTERA; }
 {ERROR} { yycol += yyleng; return TOK_ERROR; }
 %%
-
-int main() {
-    return yylex();
-}

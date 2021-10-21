@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/practica1/include"
+                "${workspaceFolder}/practica1/include",
+                "${workspaceFolder}/practica2/include"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
