@@ -47,8 +47,6 @@ MAYOR   ">"
 TRUE    "true"
 FALSE   "false"
 IDENTIFICADOR   [a-zA-Z][a-zA-Z0-9]{0,99}
-IDENTIFICADOR_ERROR 
-
 CONSTANTE_ENTERA    [0-9]
 ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 %%

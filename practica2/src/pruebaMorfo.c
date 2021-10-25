@@ -138,7 +138,11 @@ int main(int argc, char ** argv) {
                     fprintf(stderr, "****Error en [lin %ld, col %ld]: simbolo no permitido (%s)\n", yylin, yycol,
                             yytext);
                 }
-                fclose(yylin);
+                else if(yyleng > 1) {
+                    fprintf(stderr, "****Error en [lin %ld, col %ld]: el identificador ha de tener 100 caracteres como máximo (%s)\n",
+                            yylin, yycol, yytext);
+                }
+                fclose(yyin);
                 fclose(out);
                 return 1;
         }
