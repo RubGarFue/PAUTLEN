@@ -52,7 +52,7 @@ ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 %%
 {ESPACIO}   { yycol += yyleng; }
 {SALTOLINEA}    { yycol=0; yylin++; }
-{COMENTARIO}    { yycol=0; yylin++; }
+{COMENTARIO}
 
 {MAIN}  { yycol += yyleng; return TOK_MAIN; }
 {INT}   { yycol += yyleng; return TOK_INT; }

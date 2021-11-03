@@ -809,7 +809,7 @@ YY_DECL
 		}
 
 	{
-#line 53 "./alfa/alfa.l"
+#line 52 "./alfa/alfa.l"
 
 #line 815 "lex.yy.c"
 
@@ -870,213 +870,213 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 54 "./alfa/alfa.l"
+#line 53 "./alfa/alfa.l"
 { yycol += yyleng; }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 55 "./alfa/alfa.l"
+#line 54 "./alfa/alfa.l"
 { yycol=0; yylin++; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 56 "./alfa/alfa.l"
-{ yycol=0; yylin++; }
+#line 55 "./alfa/alfa.l"
+
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 58 "./alfa/alfa.l"
+#line 57 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_MAIN; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 59 "./alfa/alfa.l"
+#line 58 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_INT; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 60 "./alfa/alfa.l"
+#line 59 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_BOOLEAN; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 61 "./alfa/alfa.l"
+#line 60 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_ARRAY;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 62 "./alfa/alfa.l"
+#line 61 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_FUNCTION; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 63 "./alfa/alfa.l"
+#line 62 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_IF; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 64 "./alfa/alfa.l"
+#line 63 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_ELSE; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 65 "./alfa/alfa.l"
+#line 64 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_WHILE; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 66 "./alfa/alfa.l"
+#line 65 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_SCANF; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 67 "./alfa/alfa.l"
+#line 66 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_PRINTF; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 68 "./alfa/alfa.l"
+#line 67 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_RETURN; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 69 "./alfa/alfa.l"
+#line 68 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_PUNTOYCOMA; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 70 "./alfa/alfa.l"
+#line 69 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_COMA; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 71 "./alfa/alfa.l"
+#line 70 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_PARENTESISIZQUIERDO; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 72 "./alfa/alfa.l"
+#line 71 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_PARENTESISDERECHO; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 73 "./alfa/alfa.l"
+#line 72 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_CORCHETEIZQUIERDO; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 74 "./alfa/alfa.l"
+#line 73 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_CORCHETEDERECHO; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 75 "./alfa/alfa.l"
+#line 74 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_LLAVEIZQUIERDA; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 76 "./alfa/alfa.l"
+#line 75 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_LLAVEDERECHA; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 77 "./alfa/alfa.l"
+#line 76 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_ASIGNACION; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 78 "./alfa/alfa.l"
+#line 77 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_MAS; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 79 "./alfa/alfa.l"
+#line 78 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_MENOS; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 80 "./alfa/alfa.l"
+#line 79 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_DIVISION; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 81 "./alfa/alfa.l"
+#line 80 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_ASTERISCO; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 82 "./alfa/alfa.l"
+#line 81 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_AND; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 83 "./alfa/alfa.l"
+#line 82 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_OR; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 84 "./alfa/alfa.l"
+#line 83 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_NOT; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 85 "./alfa/alfa.l"
+#line 84 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_IGUAL; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 86 "./alfa/alfa.l"
+#line 85 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_DISTINTO; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 87 "./alfa/alfa.l"
+#line 86 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_MENORIGUAL; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 88 "./alfa/alfa.l"
+#line 87 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_MAYORIGUAL; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 89 "./alfa/alfa.l"
+#line 88 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_MENOR; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 90 "./alfa/alfa.l"
+#line 89 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_MAYOR; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 91 "./alfa/alfa.l"
+#line 90 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_TRUE; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 92 "./alfa/alfa.l"
+#line 91 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_FALSE; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 93 "./alfa/alfa.l"
+#line 92 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_IDENTIFICADOR; }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 94 "./alfa/alfa.l"
+#line 93 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_CONSTANTE_ENTERA; }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 95 "./alfa/alfa.l"
+#line 94 "./alfa/alfa.l"
 { yycol += yyleng; return TOK_ERROR; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 96 "./alfa/alfa.l"
+#line 95 "./alfa/alfa.l"
 ECHO;
 	YY_BREAK
 #line 1083 "lex.yy.c"
@@ -2084,5 +2084,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 96 "./alfa/alfa.l"
+#line 95 "./alfa/alfa.l"
 
