@@ -1,0 +1,11 @@
+TOK_IDENTIFICADOR
+identificador
+TOK_ASIGNACION
+TOK_CONSTANTE_ENTERA
+constante
+exp Opt. 1
+TOK_PUNTOYCOMA
+asignacion
+sentencia_simple
+sentencia 
+sentencias Opt. 1
