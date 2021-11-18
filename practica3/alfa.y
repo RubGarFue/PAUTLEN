@@ -3,7 +3,7 @@
 
 int yylex();
 void yyerror();
-extern FILE * out;
+extern FILE * yyout;
 extern long yylin;
 extern long yycol;
 extern int yy_morph_error;
@@ -58,8 +58,8 @@ extern int yy_morph_error;
 %left TOK_MAS TOK_MENOS
 %left TOK_ASTERISCO TOK_DIVISION
 %left TOK_NOT
-
 %%
+
 
 programa: TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA
           {fprintf(yyout,";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");}
@@ -71,8 +71,8 @@ declaraciones: declaracion
                {fprintf(yyout,";R3:\t<declaraciones> ::= <declaracion> <declaraciones>\n");}
              ;
 
-declaracion: clase identificadores
-             {fprintf(yyout,";R4:\t<declaracion> ::= <clase> <identificadores>\n");}
+declaracion: clase identificadores TOK_PUNTOYCOMA
+             {fprintf(yyout,";R4:\t<declaracion> ::= <clase> <identificadores> ;\n");}
            ;
 
 clase: clase_escalar
@@ -96,16 +96,19 @@ clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO TOK_CONSTANTE_ENTERA TOK_CORC
             ;
 
 identificadores: identificador
-                 {fprintf(yyout,";R18:\t<identificadores> ::= <identificador>*\n");}
+                 {fprintf(yyout,";R18:\t<identificadores> ::= <identificador>\n");}
                | identificador TOK_COMA identificadores
-                 {fprintf(yyout,";R19:\t<identificadores> ::= <identificador> , <identificadores>*\n");}
+                 {fprintf(yyout,";R19:\t<identificadores> ::= <identificador> , <identificadores>\n");}
                ;
 
 funciones: funcion funciones
-           {fprintf(yyout,";R20:\t<funcion> ::= <funcion> <funciones>\n");}
+           {fprintf(yyout,";R20:\t<funciones> ::= <funcion> <funciones>\n");}
+           |
+           {fprintf(yyout,";R21:\t<funciones> ::= \n");}
+          
          ;
 
-funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARANTESISDERECHO
+funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO
          TOK_CORCHETEIZQUIERDO declaraciones_funcion sentencias TOK_CORCHETEDERECHO
          {fprintf(yyout,";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");}
        ;
@@ -116,6 +119,8 @@ parametros_funcion: parametro_funcion resto_parametros_funcion
 
 resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_funcion
                           {fprintf(yyout,";R25:\t<resto_parametros_funcion> ::= ; <parametro_funcion> <resto_parametros_funcion>\n");}
+                        |
+                          {fprintf(yyout,";R26:\t<resto_parametros_funcion> ::= \n");} 
                         ;
 
 parametro_funcion: tipo identificador
@@ -124,12 +129,14 @@ parametro_funcion: tipo identificador
 
 declaraciones_funcion: declaraciones
                        {fprintf(yyout,";R28:\t<declaraciones_funcion> ::= <declaraciones>\n");}
+                       |
+                       {fprintf(yyout,";R29:\t<declaraciones_funcion> ::= \n");}
                      ;
 
 sentencias: sentencia
             {fprintf(yyout,";R30:\t<sentencias> ::= <sentencia>\n");}
           | sentencia sentencias
-            {fprintf(yyout,";R31:\t<sentenciaa> ::= <sentencia> <sentencias>\n");}
+            {fprintf(yyout,";R31:\t<sentencias> ::= <sentencia> <sentencias>\n");}
           ;
 
 sentencia: sentencia_simple TOK_PUNTOYCOMA
@@ -190,39 +197,43 @@ retorno_funcion: TOK_RETURN exp
 exp: exp TOK_MAS exp
      {fprintf(yyout,";R72:\t<exp> ::= <exp> + <exp> \n");}
    | exp TOK_MENOS exp
-     {fprintf(yyout,";R73:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R73:\t<exp> ::= <exp> - <exp> \n");}
    | exp TOK_DIVISION exp
-     {fprintf(yyout,";R74:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R74:\t<exp> ::= <exp> / <exp> \n");}
    | exp TOK_ASTERISCO exp
-     {fprintf(yyout,";R75:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R75:\t<exp> ::= <exp> * <exp> \n");}
    | TOK_MENOS exp
-     {fprintf(yyout,";R76:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R76:\t<exp> ::= - <exp> \n");}
    | exp TOK_AND exp
-     {fprintf(yyout,";R77:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R77:\t<exp> ::= <exp> && <exp> \n");}
    | exp TOK_OR exp
-     {fprintf(yyout,";R78:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R78:\t<exp> ::= <exp> || <exp> \n");}
    | TOK_NOT exp
-     {fprintf(yyout,";R79:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R79:\t<exp> ::= ! <exp> \n");}
    | identificador
-     {fprintf(yyout,";R80:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R80:\t<exp> ::= <identificador>\n");}
    | constante
-     {fprintf(yyout,";R81:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R81:\t<exp> ::= <constante>\n");}
    | TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO
-     {fprintf(yyout,";R82:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R82:\t<exp> ::= ( <exp> )\n");}
    | TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISIZQUIERDO
-     {fprintf(yyout,";R83:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R83:\t<exp> ::= ( <comparacion> )\n");}
    | elemento_vector
-     {fprintf(yyout,";R85:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R85:\t<exp> ::= <elemento_vector>\n");}
    | identificador TOK_PARENTESISIZQUIERDO lista_expresiones TOK_PARENTESISDERECHO
-     {fprintf(yyout,";R88:\t<exp> ::= <exp> + <exp> \n");}
+     {fprintf(yyout,";R88:\t<exp> ::= <identificador> ( <lista_expresiones> ) \n");}
    ;
 
 lista_expresiones: exp resto_lista_expresiones
                    {fprintf(yyout,";R89:\t<lista_expresiones> ::= <exp>  <resto_lista_expresiones> \n");}
+                   |
+                   {fprintf(yyout,";R90:\t<lista_expresiones> ::= \n");}
                  ;
 
 resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones 
                          {fprintf(yyout,";R91:\t<resto_lista_expresiones> ::= , <exp>  <resto_lista_expresiones> \n");}
+                        |
+                         {fprintf(yyout,";R92:\t<resto_lista_expresiones> ::= \n");} 
                        ;
 
 comparacion: exp TOK_IGUAL exp
@@ -263,7 +274,7 @@ identificador: TOK_IDENTIFICADOR
 
 void yyerror(const char * s) {
     if(!yy_morph_error) {
-        printf("****Error sintactico en linea: %ld\n", yylin);
+        printf("****Error sintactico en [lin %ld, col %ld]\n", yylin, yycol);
     }
 
 }
