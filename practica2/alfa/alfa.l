@@ -25,7 +25,7 @@ RETURN  "return"
 PUNTOYCOMA  ";"
 COMA    ","
 PARENTESISIZQUIERDO "("
-PARANTESISDERECHO   ")"
+PARENTESISDERECHO   ")"
 CORCHETEIZQUIERDO   "["
 CORCHETEDERECHO "]"
 LLAVEIZQUIERDA  "{"
@@ -68,7 +68,7 @@ ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 {PUNTOYCOMA}    { yycol += yyleng; return TOK_PUNTOYCOMA; }
 {COMA}  { yycol += yyleng; return TOK_COMA; }
 {PARENTESISIZQUIERDO}   { yycol += yyleng; return TOK_PARENTESISIZQUIERDO; }
-{PARANTESISDERECHO} { yycol += yyleng; return TOK_PARENTESISDERECHO; }
+{PARENTESISDERECHO} { yycol += yyleng; return TOK_PARENTESISDERECHO; }
 {CORCHETEIZQUIERDO} { yycol += yyleng; return TOK_CORCHETEIZQUIERDO; }
 {CORCHETEDERECHO}   { yycol += yyleng; return TOK_CORCHETEDERECHO; }
 {LLAVEIZQUIERDA}    { yycol += yyleng; return TOK_LLAVEIZQUIERDA; }

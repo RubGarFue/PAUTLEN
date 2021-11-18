@@ -26,7 +26,7 @@ RETURN  "return"
 PUNTOYCOMA  ";"
 COMA    ","
 PARENTESISIZQUIERDO "("
-PARANTESISDERECHO   ")"
+PARENTESISDERECHO   ")"
 CORCHETEIZQUIERDO   "["
 CORCHETEDERECHO "]"
 LLAVEIZQUIERDA  "{"
@@ -69,7 +69,7 @@ ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 {PUNTOYCOMA}    { yycol += yyleng; fprintf(out, ";D:\tTOK_PUNTOYCOMA\n"); return TOK_PUNTOYCOMA; }
 {COMA}  { yycol += yyleng; fprintf(out, ";D:\tTOK_COMA\n"); return TOK_COMA; }
 {PARENTESISIZQUIERDO}   { yycol += yyleng; fprintf(out, ";D:\tTOK_PARENTESISIZQUIERDO\n"); return TOK_PARENTESISIZQUIERDO; }
-{PARANTESISDERECHO} { yycol += yyleng; fprintf(out, ";D:\tTOK_PARENTESISDERECHO\n"); return TOK_PARENTESISDERECHO; }
+{PARENTESISDERECHO} { yycol += yyleng; fprintf(out, ";D:\tTOK_PARENTESISDERECHO\n"); return TOK_PARENTESISDERECHO; }
 {CORCHETEIZQUIERDO} { yycol += yyleng; fprintf(out, ";D:\tTOK_CORCHETEIZQUIERDO\n"); return TOK_CORCHETEIZQUIERDO; }
 {CORCHETEDERECHO}   { yycol += yyleng; fprintf(out, ";D:\tTOK_CORCHETEDERECHO\n"); return TOK_CORCHETEDERECHO; }
 {LLAVEIZQUIERDA}    { yycol += yyleng; fprintf(out, ";D:\tTOK_LLAVEIZQUIERDA\n"); return TOK_LLAVEIZQUIERDA; }
