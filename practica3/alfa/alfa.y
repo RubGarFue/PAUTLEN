@@ -57,7 +57,7 @@ extern int yy_morph_error;
 %left TOK_AND TOK_OR
 %left TOK_MAS TOK_MENOS
 %left TOK_ASTERISCO TOK_DIVISION
-%left TOK_NOT
+%right TOK_NOT
 %%
 
 
@@ -91,8 +91,8 @@ tipo: TOK_INT
       {fprintf(yyout,";R11:\t<tipo> ::= boolean\n");}
     ;
 
-clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO TOK_CONSTANTE_ENTERA TOK_CORCHETEDERECHO
-              {fprintf(yyout,";R15:\t<clase_vector> ::= array <tipo> [ TOK_CONSTANTE_ENTERA ]\n");}
+clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETEDERECHO
+              {fprintf(yyout,";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");}
             ;
 
 identificadores: identificador
@@ -103,18 +103,20 @@ identificadores: identificador
 
 funciones: funcion funciones
            {fprintf(yyout,";R20:\t<funciones> ::= <funcion> <funciones>\n");}
-           |
+         |
            {fprintf(yyout,";R21:\t<funciones> ::= \n");}
           
          ;
 
 funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO
-         TOK_CORCHETEIZQUIERDO declaraciones_funcion sentencias TOK_CORCHETEDERECHO
+         TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA
          {fprintf(yyout,";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");}
        ;
 
 parametros_funcion: parametro_funcion resto_parametros_funcion
                     {fprintf(yyout,";R23:\t<parametros_funcion> ::= <parametro_funcion> <resto_parametros_funcion>\n");}
+                  |
+                    {fprintf(yyout,";R24:\t<parametros_funcion> ::= \n");}
                   ;
 
 resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_funcion
@@ -129,7 +131,7 @@ parametro_funcion: tipo identificador
 
 declaraciones_funcion: declaraciones
                        {fprintf(yyout,";R28:\t<declaraciones_funcion> ::= <declaraciones>\n");}
-                       |
+                     |
                        {fprintf(yyout,";R29:\t<declaraciones_funcion> ::= \n");}
                      ;
 
@@ -171,14 +173,13 @@ elemento_vector: identificador TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
                  {fprintf(yyout,";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");}
                ;
 
-condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
+condicional: TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
              {fprintf(yyout,";R50:\t<condicional> ::= if ( <exp> ) { <sentencias> }\n");}
-           | TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
-             TOK_ELSE TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
+           | TOK_IF TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA TOK_ELSE TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
              {fprintf(yyout,";R51:\t<condicional> ::= if ( <exp> ) { <sentencias> } else { <sentencias> }\n");}
            ;
 
-bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_CORCHETEIZQUIERDO sentencias TOK_CORCHETEDERECHO
+bucle: TOK_WHILE TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
        {fprintf(yyout,";R52:\t<bucle> ::= while ( <exp> ) { <sentencias> }\n");}
      ;
 
@@ -226,13 +227,13 @@ exp: exp TOK_MAS exp
 
 lista_expresiones: exp resto_lista_expresiones
                    {fprintf(yyout,";R89:\t<lista_expresiones> ::= <exp>  <resto_lista_expresiones> \n");}
-                   |
+                 |
                    {fprintf(yyout,";R90:\t<lista_expresiones> ::= \n");}
                  ;
 
 resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones 
                          {fprintf(yyout,";R91:\t<resto_lista_expresiones> ::= , <exp>  <resto_lista_expresiones> \n");}
-                        |
+                       |
                          {fprintf(yyout,";R92:\t<resto_lista_expresiones> ::= \n");} 
                        ;
 
@@ -278,6 +279,3 @@ void yyerror(const char * s) {
     }
 
 }
-
-
-

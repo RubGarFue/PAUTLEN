@@ -1,6 +1,6 @@
 ####################################################
 CC=gcc
-CFLAGS= -g -Wall -I./src -I./ejs -I./include -I./obj
+CFLAGS= -ansi -pedantic
 ####################################################
 .PHONY: clean
 
@@ -10,16 +10,16 @@ all:
 	@make pruebaSintactico
 
 pruebaSintactico: y.tab.o lex.yy.o pruebaSintactico.o
-	$(CC) -o pruebaSintactico ./obj/y.tab.o ./obj/lex.yy.o ./obj/pruebaSintactico.o
+	$(CC) -o pruebaSintactico ./obj/y.tab.o lex.yy.o ./obj/pruebaSintactico.o
 
 pruebaSintactico.o: ./src/pruebaSintactico.c
-	$(CC) -c -o ./obj/pruebaSintactico.o ./src/pruebaSintactico.c
+	$(CC) -Wall $(CFLAGS) -c -o ./obj/pruebaSintactico.o ./src/pruebaSintactico.c
 
 lex.yy.o: lex.yy.c
-	$(CC) -c -o ./obj/y.tab.o ./src/y.tab.c
+	$(CC) $(CFLAGS) -c -o ./obj/y.tab.o ./src/y.tab.c
 
 y.tab.o: y.tab.c
-	$(CC) -c -o ./obj/y.tab.o ./src/y.tab.c
+	$(CC) $(CFLAGS) -c -o ./obj/y.tab.o ./src/y.tab.c
 
 y.tab.c: ./alfa/alfa.y
 	bison -dyv ./alfa/alfa.y
