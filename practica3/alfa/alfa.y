@@ -217,7 +217,7 @@ exp: exp TOK_MAS exp
      {fprintf(yyout,";R81:\t<exp> ::= <constante>\n");}
    | TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO
      {fprintf(yyout,";R82:\t<exp> ::= ( <exp> )\n");}
-   | TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISIZQUIERDO
+   | TOK_PARENTESISIZQUIERDO comparacion TOK_PARENTESISDERECHO
      {fprintf(yyout,";R83:\t<exp> ::= ( <comparacion> )\n");}
    | elemento_vector
      {fprintf(yyout,";R85:\t<exp> ::= <elemento_vector>\n");}

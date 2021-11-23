@@ -1,6 +1,6 @@
 ####################################################
 CC=gcc
-CFLAGS= -ansi -pedantic
+CFLAGS= -g -I./src -I./include -I./obj
 ####################################################
 .PHONY: clean
 
@@ -10,13 +10,13 @@ all:
 	@make pruebaSintactico
 
 pruebaSintactico: y.tab.o lex.yy.o pruebaSintactico.o
-	$(CC) -o pruebaSintactico ./obj/y.tab.o lex.yy.o ./obj/pruebaSintactico.o
+	$(CC) -o pruebaSintactico ./obj/y.tab.o ./obj/lex.yy.o ./obj/pruebaSintactico.o
 
 pruebaSintactico.o: ./src/pruebaSintactico.c
-	$(CC) -Wall $(CFLAGS) -c -o ./obj/pruebaSintactico.o ./src/pruebaSintactico.c
+	$(CC) $(CFLAGS) -c -o ./obj/pruebaSintactico.o ./src/pruebaSintactico.c
 
 lex.yy.o: lex.yy.c
-	$(CC) $(CFLAGS) -c -o ./obj/y.tab.o ./src/y.tab.c
+	$(CC) $(CFLAGS) -c -o ./obj/lex.yy.o ./src/lex.yy.c
 
 y.tab.o: y.tab.c
 	$(CC) $(CFLAGS) -c -o ./obj/y.tab.o ./src/y.tab.c
@@ -26,7 +26,7 @@ y.tab.c: ./alfa/alfa.y
 	mv y.tab.c ./src
 	mv y.tab.h ./include
 
-lex.yy.c: ./alfa/alfa.l  ./include/y.tab.h
+lex.yy.c: ./alfa/alfa.l ./include/y.tab.h
 	flex ./alfa/alfa.l
 	mv lex.yy.c ./src
 

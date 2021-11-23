@@ -92,5 +92,5 @@ ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 {FALSE} { yycol += yyleng; fprintf(yyout, ";D:\tfalse\n"); return TOK_FALSE; }
 [a-zA-Z][a-zA-Z0-9]{0,99}  { yycol += yyleng; fprintf(yyout, ";D:\t%s\n", yytext); return TOK_IDENTIFICADOR; }
 [0-9]   { yycol += yyleng; fprintf(yyout, ";D:\t%s\n",yytext); return TOK_CONSTANTE_ENTERA; }
-{ERROR} { yycol += yyleng; fprintf(stderr, "****Error en [lin %ld, col %ld]: simbolo no permitido \n", yylin, yycol); yy_morph_error = 1; return TOK_ERROR; }
+{ERROR} { yycol += yyleng; fprintf(stderr, "****Error en [lin %ld, col %ld]: simbolo no permitido (%s)\n", yylin, yycol, yytext); yy_morph_error = 1; return TOK_ERROR; }
 %%
