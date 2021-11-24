@@ -1,6 +1,11 @@
 #include "tabla_simbolos.h"
 #include "uthash.h" 
 
+/**
+ * @brief TablaSimbolos
+ * 
+ * Esta estructura define una tabla de simbolos 
+ */
 struct _TablaSimbolos {
     Elemento* global;
     Elemento* local;
@@ -9,6 +14,11 @@ struct _TablaSimbolos {
     int ambito;
 };
 
+/**
+ * @brief Elemento
+ * 
+ * Esta estructura define un elemento de la tabla de simbolos
+ */
 struct _Elemento {
     char *identificador;
     int entero;
