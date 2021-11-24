@@ -1,3 +1,13 @@
+/**
+ * @file prueba_tabla.c
+ * @author Miguel Escribano Ortega, Rubén García de la Fuente
+ * @brief Programa principal para probar la tabla de símbolos
+ * @version 0.1
+ * @date 2021-11-24
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

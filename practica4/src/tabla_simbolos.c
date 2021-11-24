@@ -1,10 +1,20 @@
+/**
+ * @file tabla_simbolos.c
+ * @author Miguel Escribano Ortega, Rubén García de la Fuente
+ * @brief Implementación de las estructuras y funciones de la tabla de símbolos
+ * @version 0.1
+ * @date 2021-11-24
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #include "tabla_simbolos.h"
 #include "uthash.h" 
 
 /**
  * @brief TablaSimbolos
  * 
- * Esta estructura define una tabla de simbolos 
+ * Esta estructura define una tabla de símbolos 
  */
 struct _TablaSimbolos {
     Elemento* global;
@@ -17,7 +27,7 @@ struct _TablaSimbolos {
 /**
  * @brief Elemento
  * 
- * Esta estructura define un elemento de la tabla de simbolos
+ * Esta estructura define un elemento de la tabla de símbolos
  */
 struct _Elemento {
     char *identificador;
