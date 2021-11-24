@@ -126,6 +126,8 @@ int apertura_ambito(TablaSimbolos *tabla, char* identificador, int entero) {
 
 int cierre_ambito(TablaSimbolos *tabla) {
 
+    int i = 0;
+
     Elemento* elemento, *tmp;
 
     if (tabla->ambito == AMBITO_GLOBAL) {
@@ -134,7 +136,12 @@ int cierre_ambito(TablaSimbolos *tabla) {
     
     HASH_ITER(hh, tabla->local, elemento, tmp) {
         HASH_DEL(tabla->local, elemento);
-        free(elemento);
+        
+        if (i != 0) {
+            free(elemento);
+        }
+
+        i++;
     }
 
     tabla->ambito = AMBITO_GLOBAL;
