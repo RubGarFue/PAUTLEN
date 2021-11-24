@@ -40,11 +40,13 @@ int main(int argc, char *argv[]) {
     }
 
     while(fgets(buffer, MAX_BUFFER, in)) {
-        identificador = strtok(NULL, " \n");
+        identificador = strtok(buffer, " ");
 
-        entero_str = strtok(NULL, " \n");
+        entero_str = strtok(NULL, "\n");
 
         if (entero_str == NULL) {
+            identificador[strcspn(identificador, "\n")] = '\0';
+
             entero = busqueda_elemento(tabla, identificador);
             fprintf(out, "%s %d\n", identificador, entero);
         }
@@ -52,7 +54,7 @@ int main(int argc, char *argv[]) {
         else {
             entero = atoi(entero_str);
 
-            if (atoi(entero_str) < 0) {
+            if (entero < 0) {
                 
                 if (strcmp(identificador, "cierre") == 0 && entero == -999){
                     if(cierre_ambito(tabla) == 0) {

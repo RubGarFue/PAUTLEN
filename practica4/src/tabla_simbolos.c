@@ -58,7 +58,7 @@ int insercion_elemento(TablaSimbolos* tabla, char* identificador, int entero) {
 
     Elemento* elemento = NULL;
 
-    if (busqueda_elemento(tabla, identificador) == -1) {
+    if (busqueda_elemento(tabla, identificador) != -1) {
         return -1;
     }
     
@@ -104,7 +104,7 @@ int apertura_ambito(TablaSimbolos *tabla, char* identificador, int entero) {
 
     Elemento* elemento = NULL;
 
-    if (tabla->ambito = AMBITO_LOCAL) {
+    if (tabla->ambito == AMBITO_LOCAL) {
         return -1;
     }
 
@@ -128,7 +128,7 @@ int cierre_ambito(TablaSimbolos *tabla) {
 
     Elemento* elemento, *tmp;
 
-    if (tabla->ambito = AMBITO_GLOBAL) {
+    if (tabla->ambito == AMBITO_GLOBAL) {
         return -1;
     }
     
