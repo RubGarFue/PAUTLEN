@@ -92,6 +92,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    eliminar_tabla(tabla);
+
     fclose(in);
     fclose(out);
 

@@ -66,4 +66,10 @@ int apertura_ambito(TablaSimbolos *tabla, char* identificador, int entero);
  */
 int cierre_ambito(TablaSimbolos *tabla);
 
+/**
+ * @brief elimina y libera todos los recursos de una tabla de símbolos
+ * @param tabla
+ */
+void eliminar_tabla(TablaSimbolos *tabla);
+
 #endif

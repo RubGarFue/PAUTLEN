@@ -17,10 +17,8 @@
  * Esta estructura define una tabla de símbolos 
  */
 struct _TablaSimbolos {
-    Elemento* global;
-    Elemento* local;
-    int len_global;
-    int len_local;
+    Elemento** global;
+    Elemento** local;
     int ambito;
 };
 
@@ -45,11 +43,11 @@ TablaSimbolos* crear_tabla() {
         return NULL;
     }
 
-    tabla->global = NULL;
-    tabla->local = NULL;
+    tabla->global = (Elemento**) malloc(sizeof(Elemento*));
+    tabla->local = (Elemento**) malloc(sizeof(Elemento*));
 
-    tabla->len_global = 0;
-    tabla->len_local = 0;
+    *(tabla->global) = NULL;
+    *(tabla->local) = NULL;
 
     tabla->ambito = AMBITO_GLOBAL;
 
@@ -78,10 +76,18 @@ int insercion_elemento(TablaSimbolos* tabla, char* identificador, int entero) {
 
     Elemento* elemento = NULL;
 
-    if (busqueda_elemento(tabla, identificador) != -1) {
+    if (tabla->ambito == AMBITO_GLOBAL) {
+        HASH_FIND_STR(*(tabla->global), identificador, elemento);
+    }
+
+    else {
+        HASH_FIND_STR(*(tabla->local), identificador, elemento);
+    }
+
+    if(elemento != NULL) {
         return -1;
     }
-    
+
     elemento = crear_elemento(identificador, entero);
 
     if (elemento == NULL) {
@@ -89,11 +95,11 @@ int insercion_elemento(TablaSimbolos* tabla, char* identificador, int entero) {
     }
 
     if (tabla->ambito == AMBITO_GLOBAL) {
-        HASH_ADD_STR(tabla->global, identificador, elemento);
+        HASH_ADD_STR(*(tabla->global), identificador, elemento);
     }
 
     else {
-        HASH_ADD_STR(tabla->local, identificador, elemento);
+        HASH_ADD_STR(*(tabla->local), identificador, elemento);
     }
 
     return 0;
@@ -105,11 +111,15 @@ int busqueda_elemento(TablaSimbolos *tabla, char* identificador) {
     Elemento* elemento = NULL;
 
     if (tabla->ambito == AMBITO_GLOBAL) {
-        HASH_FIND_STR(tabla->global, identificador, elemento);
+        HASH_FIND_STR(*(tabla->global), identificador, elemento);
     }
 
     else {
-        HASH_FIND_STR(tabla->local, identificador, elemento);
+        HASH_FIND_STR(*(tabla->local), identificador, elemento);
+
+        if (elemento == NULL) {
+            HASH_FIND_STR(*(tabla->global), identificador, elemento);
+        }
     }
 
     if(elemento == NULL) {
@@ -122,21 +132,23 @@ int busqueda_elemento(TablaSimbolos *tabla, char* identificador) {
 
 int apertura_ambito(TablaSimbolos *tabla, char* identificador, int entero) {
 
-    Elemento* elemento = NULL;
+    Elemento* elemento1 = NULL;
+    Elemento* elemento2 = NULL;
 
     if (tabla->ambito == AMBITO_LOCAL) {
         return -1;
     }
 
-    elemento = crear_elemento(identificador, entero);
+    elemento1 = crear_elemento(identificador, entero);
+    elemento2 = crear_elemento(identificador, entero);
 
-    if (elemento == NULL) {
+    if (elemento1 == NULL || elemento2 == NULL) {
         return -1;
     }
 
-    HASH_ADD_STR(tabla->global, identificador, elemento);
+    HASH_ADD_STR(*(tabla->global), identificador, elemento1);
 
-    HASH_ADD_STR(tabla->local, identificador, elemento);
+    HASH_ADD_STR(*(tabla->local), identificador, elemento2);
 
     tabla->ambito = AMBITO_LOCAL;
 
@@ -146,25 +158,34 @@ int apertura_ambito(TablaSimbolos *tabla, char* identificador, int entero) {
 
 int cierre_ambito(TablaSimbolos *tabla) {
 
-    int i = 0;
-
     Elemento* elemento, *tmp;
 
     if (tabla->ambito == AMBITO_GLOBAL) {
         return -1;
     }
-    
-    HASH_ITER(hh, tabla->local, elemento, tmp) {
-        HASH_DEL(tabla->local, elemento);
-        
-        if (i != 0) {
-            free(elemento);
-        }
 
-        i++;
+    HASH_ITER(hh, *(tabla->local), elemento, tmp) {
+        HASH_DEL(*(tabla->local), elemento);
+        free(elemento);
     }
 
     tabla->ambito = AMBITO_GLOBAL;
 
     return 0;
+}
+
+
+void eliminar_tabla(TablaSimbolos *tabla) {
+
+    Elemento* elemento, *tmp;
+
+    HASH_ITER(hh, *(tabla->global), elemento, tmp) {
+        HASH_DEL(*(tabla->global), elemento);
+        free(elemento);
+    }
+
+    free(tabla->local);
+    free(tabla->global);
+
+    free(tabla);
 }
