@@ -122,7 +122,7 @@ int insercion_elemento(TablaSimbolos* tabla, char *nombre, int categoria, int cl
 }
 
 
-int busqueda_elemento(TablaSimbolos *tabla, char* identificador) {
+Elemento* busqueda_elemento(TablaSimbolos *tabla, char* identificador) {
 
     Elemento* elemento = NULL;
 
@@ -138,15 +138,12 @@ int busqueda_elemento(TablaSimbolos *tabla, char* identificador) {
         }
     }
 
-    if(elemento == NULL) {
-        return -1;
-    }
-
     return elemento;
 }
 
 
-int apertura_ambito(TablaSimbolos *tabla, char* identificador, int entero) {
+int apertura_ambito(TablaSimbolos* tabla, char *nombre, int categoria, int clase, int tipo,
+                    int tamano, int num_var_loc, int pos_var_loc, int num_par, int pos_par) {
 
     Elemento* elemento1 = NULL;
     Elemento* elemento2 = NULL;
@@ -155,16 +152,16 @@ int apertura_ambito(TablaSimbolos *tabla, char* identificador, int entero) {
         return -1;
     }
 
-    elemento1 = crear_elemento(identificador, entero);
-    elemento2 = crear_elemento(identificador, entero);
+    elemento1 = crear_elemento(nombre, categoria, clase, tipo, tamano, num_var_loc, pos_var_loc, num_par, pos_par);
+    elemento2 = crear_elemento(nombre, categoria, clase, tipo, tamano, num_var_loc, pos_var_loc, num_par, pos_par);
 
     if (elemento1 == NULL || elemento2 == NULL) {
         return -1;
     }
 
-    HASH_ADD_STR(*(tabla->global), identificador, elemento1);
+    HASH_ADD_STR(*(tabla->global), nombre, elemento1);
 
-    HASH_ADD_STR(*(tabla->local), identificador, elemento2);
+    HASH_ADD_STR(*(tabla->local), nombre, elemento2);
 
     tabla->ambito = AMBITO_LOCAL;
 

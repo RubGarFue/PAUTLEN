@@ -29,22 +29,30 @@ TablaSimbolos* crear_tabla();
  * @brief inserta un elemento en la tabla de símbolos
  * 
  * @param tabla tabla de simbolos a la cual queremos insertar el elemento
- * @param identificador nombre del elemento
- * @param entero entero característico del elemento
+ * @param nombre nombre del elemento
+ * @param categoria categoria del elemento
+ * @param clase clase del elemento
+ * @param tipo tipo del elemento
+ * @param tamano tamano del elemento
+ * @param num_var_loc numero de variables locales
+ * @param pos_var_loc posicion de variable local
+ * @param num_par numero de parametros
+ * @param pos_par posicion de parametro
  * @return int
  * 0 si se insertó correctamente, -1 si hubo algun error
  */
-int insercion_elemento(TablaSimbolos* tabla, char* identificador, int entero);
+int insercion_elemento(TablaSimbolos* tabla, char *nombre, int categoria, int clase, int tipo,
+                       int tamano, int num_var_loc, int pos_var_loc, int num_par, int pos_par);
 
 /**
  * @brief busca un elemento de la tabla de símbolos
  * 
  * @param tabla tabla de símbolos en la cual queremos buscar el elemento
  * @param identificador nombre del elemento
- * @return int 
- * retorna el entero característico del elemento, -1 si no se encontró en la tabla
+ * @return Elemento*
+ * retorna el puntero apuntando al elemento encontrado, NULL si no se encontró en la tabla
  */
-int busqueda_elemento(TablaSimbolos *tabla, char* identificador);
+Elemento* busqueda_elemento(TablaSimbolos *tabla, char* identificador);
 
 /**
  * @brief abre un ámbito de la tabla de símbolos
