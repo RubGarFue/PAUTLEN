@@ -63,8 +63,8 @@ Elemento* busqueda_elemento(TablaSimbolos *tabla, char* identificador);
  * @return int
  * 0 si se abrió correctamente, -1 si hubo algun error
  */
-int apertura_ambito(TablaSimbolos *tabla, char* identificador, int entero);
-
+int apertura_ambito(TablaSimbolos* tabla, char *nombre, int categoria, int clase, int tipo,
+                    int tamano, int num_var_loc, int pos_var_loc, int num_par, int pos_par);
 /**
  * @brief cierra un ámbito de la tabla de sámbolos
  * 
