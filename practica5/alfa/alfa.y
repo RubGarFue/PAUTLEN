@@ -162,7 +162,24 @@ funciones: funcion funciones
 
 funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO
          TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA
-         { fprintf(yyout,";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n"); }
+         { fprintf(yyout,";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");
+           if(retorno_funcion < 1) {
+             printf("****Error semantico en lin %ld: Funcion %s sin sentencia de retorno.\n", nlines, $1.nombre);
+             eliminar_tabla(tabla);
+             return -1;
+           } 
+           cierre_ambito(tabla);
+           /*Guardamos la informacion en el simbolo de la tabla global*/
+           Elemento *elemento;
+           elemento = busqueda_elemento(tabla, $1.nombre);
+           if(elemento == NULL) {
+             printf("****Error en la tabla de simbolos\n");
+             eliminar_tabla(tabla);
+             return -1;
+           }
+           /*FALTA*/
+           }
+           
        ;
 
 
