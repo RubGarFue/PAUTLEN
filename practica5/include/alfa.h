@@ -9,6 +9,7 @@
 
 #define MAX_LONG_ID 100
 #define MAX_TAMANIO_VECTOR 64
+#define MAX_TAMANIO_INT 64
 
 typedef struct {
     char nombre[MAX_LONG_ID+1];

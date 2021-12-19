@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
+#include "generacion.h"
 
+#include "tabla_simbolos.h"
 int yylex();
 void yyerror();
 extern FILE * yyout;
@@ -12,6 +14,8 @@ int tipo_actual;
 int clase_actual;
 int tamanio_vector_actual;
 int pos_variable_local_actual;
+int etiqueta;
+TablaSimbolos *tabla;
 %}
 
 %union {
@@ -68,7 +72,7 @@ int pos_variable_local_actual;
 programa: inicioTabla TOK_MAIN TOK_LLAVEIZQUIERDA declaraciones funciones sentencias TOK_LLAVEDERECHA
           { 
             fprintf(yyout,";R1:\t<programa> ::= main { <declaraciones> <funciones> <sentencias> }\n");
-            //escribir fin programa
+            escribir_fin(yyout);
             eliminar_tabla(tabla);
           }
         ;
@@ -78,10 +82,13 @@ inicioTabla:
                if (tabla == NULL) {
                  return -1;
                }
-               // escribir subseccion
-               // esceribir cabecera
+               escribir_subseccion_data(yyout);
+               escribir_cabecera_bss(yyout);
+              
              }
            ;
+
+          //  FALTAN COSAS
 
 declaraciones: declaracion
                { fprintf(yyout,";R2:\t<declaraciones> ::= <declaracion>\n"); }
@@ -96,17 +103,19 @@ declaracion: clase identificadores TOK_PUNTOYCOMA
 clase: clase_escalar
        { 
          fprintf(yyout,";R5:\t<clase> ::= <clase_escalar>\n");
-         clase_actual = clase_escalar
+         clase_actual = ESCALAR;
+
        }
      | clase_vector
        { 
          fprintf(yyout,";R7:\t<clase> ::= <clase_vector>\n");
-         clase_actual = clase_vector
+         clase_actual = VECTOR;
        }
      ;
 
 clase_escalar: tipo
                { fprintf(yyout,";R9:\t<clase_escalar> ::= <tipo>\n"); }
+               tamanio_vector_actual = 1;
              ;
 
 tipo: TOK_INT
@@ -127,10 +136,9 @@ clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETE
                 tamanio_vector_actual = $4.valor_entero;
 
                 if(tamanio_vector_actual <= 0 || tamanio_vector_actual > MAX_TAMANIO_VECTOR) {
-                  print(""); //Mensaje de error
-                  // Liberar tablas
-
-                  //FALTA ACABAR
+                  print("****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).",nlines);
+                  eliminar_tabla(tabla);
+                  return -1;
                 }
                 }
             ;
@@ -152,6 +160,15 @@ funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_func
          TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA
          { fprintf(yyout,";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n"); }
        ;
+
+
+
+
+
+
+
+
+
 
 parametros_funcion: parametro_funcion resto_parametros_funcion
                     { fprintf(yyout,";R23:\t<parametros_funcion> ::= <parametro_funcion> <resto_parametros_funcion>\n"); }
@@ -394,6 +411,11 @@ resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones
 comparacion: exp TOK_IGUAL exp
              {
                fprintf(yyout,";R93:\t<comparacion> ::= <exp> == <exp> \n");
+               if($1.tipo == BOOLEAN || $3.tipo == BOOLEAN) {
+                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.",nlines)
+)
+               }
+               
                $$.tipo = BOOLEAN;
                $$.es_direccion = 0;
              }
@@ -469,6 +491,9 @@ constante_logica: TOK_TRUE
 
                     $$.tipo = BOOLEAN;
                     $$.es_direccion = 0;
+                    char c[1];
+                    sprint(c,"1");
+                    escribir_operando(yyout, c, 0);
                   }
                 | TOK_FALSE
                   {
@@ -476,6 +501,9 @@ constante_logica: TOK_TRUE
 
                     $$.tipo = BOOLEAN;
                     $$.es_direccion = 0;
+                    char c[1];
+                    sprint(c,"0");
+                    escribir_operando(yyout, c, 0);
                   }
                 ;
 
@@ -486,6 +514,9 @@ constante_entera: TOK_CONSTANTE_ENTERA
                     $$.tipo = INT;
                     $$.es_direccion = 0;
                     $$.valor_entero = $1.valor_entero;
+                    char c[MAX_TAMANIO_INT];
+                    sprintf(c, "%d", $$.valor_entero);
+                    escribir_operando(yyout, c, 0);
                   }
                 ;
 
