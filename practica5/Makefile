@@ -1,25 +1,44 @@
 ####################################################
 CC=gcc
-CFLAGS= -g -Wall -I./src -I./ejs -I./include -I./obj
+CFLAGS= -g -I./src -I./include -I./obj
 ####################################################
 .PHONY: clean
 
 all:
+	mkdir -p ./include
 	mkdir -p ./obj
-	@make prueba_tabla
+	@make alfa
 
-prueba_tabla: prueba_tabla.o tabla_simbolos.o
-	$(CC) -o prueba_tabla ./obj/prueba_tabla.o ./obj/tabla_simbolos.o
+alfa: y.tab.o lex.yy.o alfa.o tabla_simbolos.o
+	$(CC) -o alfa ./obj/y.tab.o ./obj/lex.yy.o ./obj/alfa.o ./obj/tabla_simbolos.o
 
-prueba_tabla.o: ./src/prueba_tabla.c ./include/tabla_simbolos.h
-	$(CC) $(CFLAGS) -c ./src/prueba_tabla.c
-	mv prueba_tabla.o ./obj
+alfa.o: ./src/alfa.c
+	$(CC) $(CFLAGS) -c -o ./obj/alfa.o ./src/alfa.c
 
 tabla_simbolos.o: ./src/tabla_simbolos.c ./include/tabla_simbolos.h
 	$(CC) $(CFLAGS) -c ./src/tabla_simbolos.c
 	mv tabla_simbolos.o ./obj
 
+lex.yy.o: lex.yy.c
+	$(CC) $(CFLAGS) -c -o ./obj/lex.yy.o ./src/lex.yy.c
+
+y.tab.o: y.tab.c
+	$(CC) $(CFLAGS) -c -o ./obj/y.tab.o ./src/y.tab.c
+
+y.tab.c: ./alfa/alfa.y
+	bison -dyv ./alfa/alfa.y
+	mv y.tab.c ./src
+	mv y.tab.h ./include
+
+lex.yy.c: ./alfa/alfa.l ./include/y.tab.h
+	flex ./alfa/alfa.l
+	mv lex.yy.c ./src
+
 clean:
 	@echo "Cleaning:"
+	@rm -rf ./include
 	@rm -rf ./obj
-	@rm -rf prueba_tabla
+	@rm -rf ./src/y.tab.c
+	@rm -rf ./src/lex.yy.c
+	@rm -rf y.output
+	@rm -rf alfa

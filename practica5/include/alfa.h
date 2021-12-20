@@ -4,6 +4,12 @@
 #define ESCALAR 1
 #define VECTOR 2
 
+
+#define VARIABLE 1
+#define PARAMETRO 2
+#define FUNCION 3
+
+
 #define INT 1
 #define BOOLEAN 2
 

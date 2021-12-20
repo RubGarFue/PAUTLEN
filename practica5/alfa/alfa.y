@@ -88,11 +88,10 @@ inicioTabla:
                }
                escribir_subseccion_data(yyout);
                escribir_cabecera_bss(yyout);
-              
+               escribir_segmento_codigo(yyout);
+               escribir_inicio_main(yyout);
              }
            ;
-
-          //  FALTAN COSAS
 
 declaraciones: declaracion
                { fprintf(yyout,";R2:\t<declaraciones> ::= <declaracion>\n"); }
@@ -118,8 +117,10 @@ clase: clase_escalar
      ;
 
 clase_escalar: tipo
-               { fprintf(yyout,";R9:\t<clase_escalar> ::= <tipo>\n"); }
-               tamanio_vector_actual = 1;
+               {
+                 fprintf(yyout,";R9:\t<clase_escalar> ::= <tipo>\n");
+                 tamanio_vector_actual = 1;
+               }
              ;
 
 tipo: TOK_INT
@@ -140,11 +141,11 @@ clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETE
                 tamanio_vector_actual = $4.valor_entero;
 
                 if(tamanio_vector_actual <= 0 || tamanio_vector_actual > MAX_TAMANIO_VECTOR) {
-                  print("****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).",nlines);
+                  print("****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).",yylin);
                   eliminar_tabla(tabla);
                   return -1;
                 }
-                }
+              }
             ;
 
 identificadores: identificador
@@ -163,8 +164,43 @@ funciones: funcion funciones
 funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO
          TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA
          { fprintf(yyout,";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");
+           
+           if (busqueda_elemento(tabla, $3.nombre) == NULL) {
+             strcpy($$.nombre, $3.nombre);
+             
+             apertura_ambito(tabla, $1.nombre, VARIABLE, tipo_actual,
+                                    clase_actual, tamanio_vector_actual, num_total_parametros,
+                                    pos_variable_local_actual, 0, num_total_varlocs);
+            
+             tamanio_vector_actual = 1;
+             num_total_varlocs = 0;
+             pos_variable_local_actual = 0;
+             num_argumentos_funcion = 0;
+             retorno_funcion = 0;
+             tipo_funcion = tipo;
+           }
+
+           else {
+             printf("****Error semantico en lin %ld: Declaracion duplicada\n", nlines);
+             eliminar_tabla(tabla);
+             return -1;
+           }
+
+           Elemento *elemento;
+           elemento = busqueda_elemento(tabla, $1.nombre);
+
+           if (elemento == NULL) {
+             eliminar_tabla(tabla);
+             return -1;
+           }
+
+           elemento->num_total_parametros = num_total_parametros;
+           elemento->num_total_varlocs = num_total_varlocs;
+           elemento->tipo = tipo_funcion;
+           strcpy($$.nombre, $1.nombre);
+
            if(retorno_funcion < 1) {
-             printf("****Error semantico en lin %ld: Funcion %s sin sentencia de retorno.\n", nlines, $1.nombre);
+             printf("****Error semantico en lin %ld: Funcion %s sin sentencia de retorno.\n", yylin, $1.nombre);
              eliminar_tabla(tabla);
              return -1;
            } 
@@ -173,23 +209,17 @@ funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_func
            Elemento *elemento;
            elemento = busqueda_elemento(tabla, $1.nombre);
            if(elemento == NULL) {
-             printf("****Error en la tabla de simbolos\n");
              eliminar_tabla(tabla);
              return -1;
            }
-           /*FALTA*/
-           }
            
+           elemento->num_total_parametros = num_total_parametros;
+           elemento->tipo = tipo_funcion;
+           num_total_parametros = 0;
+           num_total_varlocs = 0;
+           pos_variable_local_actual = 0;
+         }
        ;
-
-
-
-
-
-
-
-
-
 
 parametros_funcion: parametro_funcion resto_parametros_funcion
                     { fprintf(yyout,";R23:\t<parametros_funcion> ::= <parametro_funcion> <resto_parametros_funcion>\n"); }
@@ -252,17 +282,17 @@ elemento_vector: identificador TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
                    Elemento *elemento;
                    elemento = busqueda_elemento(tabla, $1.nombre);
                    if (elemento == NULL) {
-                     printf("****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n",nlines, $1.nombre);
+                     printf("****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n",yylin, $1.nombre);
                      eliminar_tabla(tabla);
                      return -1;
                    }
                    if(elemento->categoria != VECTOR) {
-                     printf("****Error semantico en lin %ld: Intento de indexacion de una variable que no es de tipo vector.\n",nlines);
+                     printf("****Error semantico en lin %ld: Intento de indexacion de una variable que no es de tipo vector.\n",yylin);
                      eliminar_tabla(tabla);
                      return -1;
                    }
                    if($3.tipo != INT){
-                     printf("****Error semantico en lin %ld: El indice en una operacion de indexacion tiene que ser de tipo entero.\n",nlines);
+                     printf("****Error semantico en lin %ld: El indice en una operacion de indexacion tiene que ser de tipo entero.\n",yylin);
                      eliminar_tabla(tabla);
                      return -1;
                    }
@@ -284,7 +314,7 @@ condicional: if_exp TOK_PARENTESISDERECHO TOK_LLAVEIZQUIERDA sentencias TOK_LLAV
 if_exp: TOK_IF TOK_PARENTESISIZQUIERDO exp
         {
           if($3.tipo != BOOLEAN) {
-            printf("****Error semantico en lin %ld: Condicional con condicion de tipo int.\n",nlines);
+            printf("****Error semantico en lin %ld: Condicional con condicion de tipo int.\n",yylin);
             eliminar_tabla(tabla);
             return -1;
           }
@@ -307,7 +337,7 @@ bucle: while_exp TOK_LLAVEIZQUIERDA sentencias TOK_LLAVEDERECHA
 while_exp: while TOK_PARENTESISIZQUIERDO exp TOK_PARENTESISDERECHO
            {
             if($3.tipo != BOOLEAN) {
-              printf("****Error semantico en lin %ld: Bucle con condicion de tipo int.\n",nlines);
+              printf("****Error semantico en lin %ld: Bucle con condicion de tipo int.\n",yylin);
               eliminar_tabla(tabla);
               return -1;
             }
@@ -319,7 +349,7 @@ while: TOK_WHILE
       {
         $$.etiqueta = etiqueta++;
         while_inicio(yyout, $$.etiqueta);
-      }
+      };
 
 lectura: TOK_SCANF identificador
          {
@@ -328,11 +358,17 @@ lectura: TOK_SCANF identificador
            elemento = busqueda_elemento(tabla, $2.nombre);
 
            if(elemento == NULL){
-             printf("****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", nllines, $2.nombre);
+             printf("****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $2.nombre);
              eliminar_tabla(tabla);
              return -1;
            }
-          /*FALTA*/
+          
+           if (elemento->categoria == VECTOR || elemento->categoria == FUNCION) {
+             printf("****Error semantico en lin %ld: Variable local de tipo no escalar.\n", yylin);
+             eliminar_tabla(tabla);
+             return -1;
+           }
+           leer(yyout, $2.nombre, elemento->tipo);
           }
        ;
 
@@ -347,21 +383,21 @@ escritura: TOK_PRINTF exp
 retorno_funcion: TOK_RETURN exp
                  {
                    if(en_llamada_a_funcion==1) {
-                     print("****Error semantico en lin X: Sentencia de retorno fuera del cuerpo de una función.\n");
+                     print("****Error semantico en lin %ld: Sentencia de retorno fuera del cuerpo de una función.\n", yylin);
                      eliminar_tabla(tabla);
                      return -1;
                    }
                     fprintf(yyout,";R61:\t<retorno_funcion> ::= return <exp>\n");
                     retornarFuncion(yyout, $2.es_direccion);
                     retorno_funcion++;
-
+                 }
                ;
 
 exp: exp TOK_MAS exp
      { 
        fprintf(yyout,";R72:\t<exp> ::= <exp> + <exp> \n");
        if($1.tipo == BOOLEANO || $3.tipo == BOOLEANO) {
-         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", nlines);
+         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
          eliminar_tabla(tabla);
          return -1;
        } 
@@ -373,7 +409,7 @@ exp: exp TOK_MAS exp
      { 
        fprintf(yyout,";R73:\t<exp> ::= <exp> - <exp> \n");
        if($1.tipo == BOOLEANO || $3.tipo == BOOLEANO) {
-         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", nlines);
+         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
          eliminar_tabla(tabla);
          return -1;
        } 
@@ -385,7 +421,7 @@ exp: exp TOK_MAS exp
      { 
        fprintf(yyout,";R74:\t<exp> ::= <exp> / <exp> \n");
        if($1.tipo == BOOLEANO || $3.tipo == BOOLEANO) {
-         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", nlines);
+         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
          eliminar_tabla(tabla);
          return -1;
        } 
@@ -397,7 +433,7 @@ exp: exp TOK_MAS exp
      { 
        fprintf(yyout,";R75:\t<exp> ::= <exp> * <exp> \n");
        if($1.tipo == BOOLEANO || $3.tipo == BOOLEANO) {
-         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", nlines);
+         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
          eliminar_tabla(tabla);
          return -1;
        } 
@@ -409,7 +445,7 @@ exp: exp TOK_MAS exp
      { 
        fprintf(yyout,";R76:\t<exp> ::= - <exp> \n");
        if($2.tipo == BOOLEANO) {
-         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", nlines);
+         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos boolean.\n", yylin);
          eliminar_tabla(tabla);
          return -1;
        } 
@@ -421,7 +457,7 @@ exp: exp TOK_MAS exp
      { 
        fprintf(yyout,";R77:\t<exp> ::= <exp> && <exp> \n");
        if($1.tipo == INT || $3.tipo == INT) {
-         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos int.\n", nlines);
+         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos int.\n", yylin);
          eliminar_tabla(tabla);
          return -1;
        } 
@@ -433,7 +469,7 @@ exp: exp TOK_MAS exp
      { 
        fprintf(yyout,";R78:\t<exp> ::= <exp> || <exp> \n");
        if($1.tipo == INT || $3.tipo == INT) {
-         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos int.\n", nlines);
+         printf("****Error semantico en lin %ld: Operacion aritmetica con operandos int.\n", yylin);
          eliminar_tabla(tabla);
          return -1;
        } 
@@ -445,7 +481,7 @@ exp: exp TOK_MAS exp
      { 
        fprintf(yyout,";R79:\t<exp> ::= ! <exp> \n");
        if($2.tipo == ENTERO) {
-         printf("****Error semantico en lin %ld: Operacion logica con operandos int.\n", nlines);
+         printf("****Error semantico en lin %ld: Operacion logica con operandos int.\n", yylin);
          eliminar_tabla(tabla);
          return -1;
        }
@@ -460,14 +496,31 @@ exp: exp TOK_MAS exp
        Elemento* elemento;
        elemento = busqueda_elemento(tabla, $1.nombre);
        if (elemento == NULL) {
-         printf("****Error semantico en lin %ld: Acceso a la variable no declarada (%s)\n", nlines, $1.nombre);
+         printf("****Error semantico en lin %ld: Acceso a la variable no declarada (%s)\n", yylin, $1.nombre);
          eliminar_tabla(tabla);
          return -1;
        }
-       // Error asignacion incompatible
+       if(elemento->categoria == FUNCION || elemento->clase == VECTOR) {
+         printf("****Error semantico en lin %ld: Asignacion incompatible.", yylin);
+         eliminar_tabla(tabla);
+         return -1;
+       }
        $$.tipo = elemento->tipo;
        $$.es_direccion = 1;
-       // escribir nasm
+       if (elemento->clase == PARAMETRO) {
+         escribirParametro(yyout, elemento->pos_par, num_total_parametros);
+       }
+       else if (elemento->clase == VARIABLE) {
+         if (tabla->ambito == AMBITO_LOCAL) {
+           escribirVariableLocal(yyout, elemento->pos_var_loc);
+         }
+       }
+       else {
+         escribir_operando(yyout, $1.nombre, 1);
+         if(en_llamada_a_funcion == 1) {
+           operandoEnPilaAArgumento(yyout,1);
+         }
+       }
      }
    | constante
      { 
@@ -499,8 +552,22 @@ exp: exp TOK_MAS exp
      }
    ;
 
+
+
+
+
+
+
+
+
+
+
+
 lista_expresiones: exp resto_lista_expresiones
-                   { fprintf(yyout,";R89:\t<lista_expresiones> ::= <exp>  <resto_lista_expresiones> \n"); }
+                   { fprintf(yyout,";R89:\t<lista_expresiones> ::= <exp>  <resto_lista_expresiones> \n");
+                   if(en_llamada_a_funcion == 1) {
+                     num_argumentos_funcion++;
+                   } }
                  |
                    { fprintf(yyout,";R90:\t<lista_expresiones> ::= \n"); }
                  ;
@@ -510,14 +577,17 @@ resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones
                            fprintf(yyout,";R91:\t<resto_lista_expresiones> ::= , <exp>  <resto_lista_expresiones> \n");
                          }
                        |
-                         { fprintf(yyout,";R92:\t<resto_lista_expresiones> ::= \n"); } 
+                         { fprintf(yyout,";R92:\t<resto_lista_expresiones> ::= \n");
+                         if(en_llamada_a_funcion == 1) {
+                           num_argumentos_funcion++;
+                         } } 
                        ;
 
 comparacion: exp TOK_IGUAL exp
              {
                fprintf(yyout,";R93:\t<comparacion> ::= <exp> == <exp> \n");
                if($1.tipo == BOOLEAN || $3.tipo == BOOLEAN) {
-                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n",nlines);
+                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n",yylin);
                  eliminar_tabla(tabla);
                  return -1;
                }
@@ -530,7 +600,7 @@ comparacion: exp TOK_IGUAL exp
              {
                fprintf(yyout,";R94:\t<comparacion> ::= <exp> != <exp>\n");
                if($1.tipo == BOOLEAN || $3.tipo == BOOLEAN) {
-                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n",nlines);
+                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n",yylin);
                  eliminar_tabla(tabla);
                  return -1;
                }
@@ -543,7 +613,7 @@ comparacion: exp TOK_IGUAL exp
              {
                fprintf(yyout,";R95:\t<comparacion> ::= <exp> <= <exp>\n");
                if ($1.tipo == BOOLEAN || $2.tipo == BOOLEAN) {
-                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", nlines);
+                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
                  eliminar_tabla(tabla);
                  return -1;
                }
@@ -556,7 +626,7 @@ comparacion: exp TOK_IGUAL exp
              {
                fprintf(yyout,";R96:\t<comparacion> ::= <exp> >= <exp>\n");
                if ($1.tipo == BOOLEAN || $2.tipo == BOOLEAN) {
-                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", nlines);
+                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
                  eliminar_tabla(tabla);
                  return -1;
                }
@@ -569,7 +639,7 @@ comparacion: exp TOK_IGUAL exp
              {
                fprintf(yyout,";R97:\t<comparacion> ::= <exp> < <exp>\n");
                if ($1.tipo == BOOLEAN || $2.tipo == BOOLEAN) {
-                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", nlines);
+                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
                  eliminar_tabla(tabla);
                  return -1;
                }
@@ -582,7 +652,7 @@ comparacion: exp TOK_IGUAL exp
              {
                fprintf(yyout,";R98:\t<comparacion> ::= <exp> > <exp>\n");
                if ($1.tipo == BOOLEAN || $2.tipo == BOOLEAN) {
-                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", nlines);
+                 printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
                  eliminar_tabla(tabla);
                  return -1;
                }
@@ -649,7 +719,7 @@ identificador: TOK_IDENTIFICADOR
                  if(insercion_elemento(tabla, $1.nombre, VARIABLE, tipo_actual,
                                        clase_actual, tamanio_vector_actual, num_total_parametros,
                                        pos_variable_local_actual, 0, num_total_varlocs) == -1) {
-                   printf("****Error semantico en lin %ld: Declaracion duplicada.\n", nlines);
+                   printf("****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
                    eliminar_tabla(tabla);
                    return -1;
                  }
