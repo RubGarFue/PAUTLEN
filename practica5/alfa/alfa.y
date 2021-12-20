@@ -65,6 +65,23 @@ TablaSimbolos *tabla;
 %token <atributos> TOK_CONSTANTE_ENTERA
 %token TOK_ERROR
 
+
+%type <atributos> constante
+%type <atributos> constante_logica
+%type <atributos> constante_entera
+%type <atributos> identificador
+%type <atributos> comparacion
+%type <atributos> exp
+
+%type <atributos> condicional
+%type <atributos> if_exp
+%type <atributos> if_else_exp
+%type <atributos> bucle
+%type <atributos> while_exp
+%type <atributos> while
+%type <atributos> elemento_vector
+%type <atributos> funcion
+
 %left TOK_IGUAL TOK_MENORIGUAL TOK_MENOR TOK_MAYORIGUAL TOK_MAYOR TOK_DISTINTO
 %left TOK_AND TOK_OR
 %left TOK_MAS TOK_MENOS
@@ -612,7 +629,7 @@ comparacion: exp TOK_IGUAL exp
            | exp TOK_MENORIGUAL exp
              {
                fprintf(yyout,";R95:\t<comparacion> ::= <exp> <= <exp>\n");
-               if ($1.tipo == BOOLEAN || $2.tipo == BOOLEAN) {
+               if ($1.tipo == BOOLEAN || $3.tipo == BOOLEAN) {
                  printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
                  eliminar_tabla(tabla);
                  return -1;
@@ -625,7 +642,7 @@ comparacion: exp TOK_IGUAL exp
            | exp TOK_MAYORIGUAL exp
              {
                fprintf(yyout,";R96:\t<comparacion> ::= <exp> >= <exp>\n");
-               if ($1.tipo == BOOLEAN || $2.tipo == BOOLEAN) {
+               if ($1.tipo == BOOLEAN || $3.tipo == BOOLEAN) {
                  printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
                  eliminar_tabla(tabla);
                  return -1;
@@ -638,7 +655,7 @@ comparacion: exp TOK_IGUAL exp
            | exp TOK_MENOR exp
              {
                fprintf(yyout,";R97:\t<comparacion> ::= <exp> < <exp>\n");
-               if ($1.tipo == BOOLEAN || $2.tipo == BOOLEAN) {
+               if ($1.tipo == BOOLEAN || $3.tipo == BOOLEAN) {
                  printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
                  eliminar_tabla(tabla);
                  return -1;
@@ -651,7 +668,7 @@ comparacion: exp TOK_IGUAL exp
            | exp TOK_MAYOR exp
              {
                fprintf(yyout,";R98:\t<comparacion> ::= <exp> > <exp>\n");
-               if ($1.tipo == BOOLEAN || $2.tipo == BOOLEAN) {
+               if ($1.tipo == BOOLEAN || $3.tipo == BOOLEAN) {
                  printf("****Error semantico en lin %ld: Comparacion con operandos boolean.\n", yylin);
                  eliminar_tabla(tabla);
                  return -1;
