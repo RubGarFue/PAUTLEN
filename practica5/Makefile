@@ -30,15 +30,13 @@ y.tab.c: ./alfa/alfa.y
 	mv y.tab.c ./src
 	mv y.tab.h ./include
 
-lex.yy.c: ./alfa/alfa.l ./include/y.tab.h
+lex.yy.c: ./alfa/alfa.l ./include/y.tab.h ./include/tabla_simbolos.h ./include/generacion.h ./include/alfa.h
 	flex ./alfa/alfa.l
 	mv lex.yy.c ./src
 
 clean:
 	@echo "Cleaning:"
-	@rm -rf ./include
 	@rm -rf ./obj
 	@rm -rf ./src/y.tab.c
 	@rm -rf ./src/lex.yy.c
 	@rm -rf y.output
-	@rm -rf alfa

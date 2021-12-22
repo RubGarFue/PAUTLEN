@@ -1,8 +1,10 @@
 %{
 #include <stdio.h>
+#include <string.h>
 #include "generacion.h"
-
+#include "alfa.h"
 #include "tabla_simbolos.h"
+
 int yylex();
 void yyerror();
 extern FILE * yyout;
@@ -23,7 +25,7 @@ TablaSimbolos *tabla;
 %}
 
 %union {
-  info_atributos atributos;
+  tipo_atributos atributos;
 }
 
 %token TOK_MAIN
@@ -158,7 +160,7 @@ clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETE
                 tamanio_vector_actual = $4.valor_entero;
 
                 if(tamanio_vector_actual <= 0 || tamanio_vector_actual > MAX_TAMANIO_VECTOR) {
-                  print("****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).",yylin);
+                  printf("****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).",yylin);
                   eliminar_tabla(tabla);
                   return -1;
                 }
@@ -185,53 +187,52 @@ funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_func
            if (busqueda_elemento(tabla, $3.nombre) == NULL) {
              strcpy($$.nombre, $3.nombre);
              
-             apertura_ambito(tabla, $1.nombre, VARIABLE, tipo_actual,
-                                    clase_actual, tamanio_vector_actual, num_total_parametros,
-                                    pos_variable_local_actual, 0, num_total_varlocs);
+             apertura_ambito(tabla, $3.nombre, VARIABLE, tipo_actual,
+                                    clase_actual, tamanio_vector_actual, num_argumentos_funcion,
+                                    pos_variable_local_actual, 0, num_argumentos_funcion);
             
              tamanio_vector_actual = 1;
-             num_total_varlocs = 0;
+             //num_total_varlocs = 0;
              pos_variable_local_actual = 0;
              num_argumentos_funcion = 0;
              retorno_funcion = 0;
-             tipo_funcion = tipo;
+             //tipo_funcion = tipo;
            }
 
            else {
-             printf("****Error semantico en lin %ld: Declaracion duplicada\n", nlines);
+             printf("****Error semantico en lin %ld: Declaracion duplicada\n", yylin);
              eliminar_tabla(tabla);
              return -1;
            }
 
-           Elemento *elemento;
-           elemento = busqueda_elemento(tabla, $1.nombre);
+           Elemento *elemento1;
+           elemento1 = busqueda_elemento(tabla, $3.nombre);
 
-           if (elemento == NULL) {
+           if (elemento1 == NULL) {
              eliminar_tabla(tabla);
              return -1;
            }
 
-           elemento->num_total_parametros = num_total_parametros;
-           elemento->num_total_varlocs = num_total_varlocs;
-           elemento->tipo = tipo_funcion;
-           strcpy($$.nombre, $1.nombre);
+           elemento1->num_total_parametros = num_total_parametros;
+           elemento1->num_total_varlocs = num_total_varlocs;
+           elemento1->clase = tipo_funcion;
 
            if(retorno_funcion < 1) {
-             printf("****Error semantico en lin %ld: Funcion %s sin sentencia de retorno.\n", yylin, $1.nombre);
+             printf("****Error semantico en lin %ld: Funcion %s sin sentencia de retorno.\n", yylin, $3.nombre);
              eliminar_tabla(tabla);
              return -1;
            } 
            cierre_ambito(tabla);
            /*Guardamos la informacion en el simbolo de la tabla global*/
-           Elemento *elemento;
-           elemento = busqueda_elemento(tabla, $1.nombre);
-           if(elemento == NULL) {
+           Elemento *elemento2;
+           elemento2 = busqueda_elemento(tabla, $3.nombre);
+           if(elemento2 == NULL) {
              eliminar_tabla(tabla);
              return -1;
            }
            
-           elemento->num_total_parametros = num_total_parametros;
-           elemento->tipo = tipo_funcion;
+           elemento2->num_total_parametros = num_total_parametros;
+           elemento2->tipo = tipo_funcion;
            num_total_parametros = 0;
            num_total_varlocs = 0;
            pos_variable_local_actual = 0;
@@ -316,7 +317,7 @@ elemento_vector: identificador TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
                    $$.tipo = elemento->tipo;
                    $$.es_direccion = 1;
                    $$.valor_entero = $3.valor_entero;
-                   escribir_elemento_vector(yyou, elemento->nombre, elemento->tamano, $3.es_direccion);
+                   escribir_elemento_vector(yyout, elemento->nombre, elemento->tamano, $3.es_direccion);
                    }
                ;
 
@@ -400,7 +401,7 @@ escritura: TOK_PRINTF exp
 retorno_funcion: TOK_RETURN exp
                  {
                    if(en_llamada_a_funcion==1) {
-                     print("****Error semantico en lin %ld: Sentencia de retorno fuera del cuerpo de una función.\n", yylin);
+                     printf("****Error semantico en lin %ld: Sentencia de retorno fuera del cuerpo de una función.\n", yylin);
                      eliminar_tabla(tabla);
                      return -1;
                    }
@@ -569,17 +570,6 @@ exp: exp TOK_MAS exp
      }
    ;
 
-
-
-
-
-
-
-
-
-
-
-
 lista_expresiones: exp resto_lista_expresiones
                    { fprintf(yyout,";R89:\t<lista_expresiones> ::= <exp>  <resto_lista_expresiones> \n");
                    if(en_llamada_a_funcion == 1) {
@@ -700,8 +690,8 @@ constante_logica: TOK_TRUE
 
                     $$.tipo = BOOLEAN;
                     $$.es_direccion = 0;
-                    char c[1];
-                    sprint(c,"1");
+                    char c[2];
+                    sprintf(c,"1");
                     escribir_operando(yyout, c, 0);
                   }
                 | TOK_FALSE
@@ -710,8 +700,8 @@ constante_logica: TOK_TRUE
 
                     $$.tipo = BOOLEAN;
                     $$.es_direccion = 0;
-                    char c[1];
-                    sprint(c,"0");
+                    char c[2];
+                    sprintf(c,"0");
                     escribir_operando(yyout, c, 0);
                   }
                 ;
