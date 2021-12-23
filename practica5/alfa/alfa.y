@@ -1,8 +1,8 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "generacion.h"
 #include "alfa.h"
+#include "generacion.h"
 #include "tabla_simbolos.h"
 
 int yylex();
@@ -12,14 +12,17 @@ extern long yylin;
 extern long yycol;
 extern int yy_morph_error;
 
+int pos_parametro_actual = 0;
+int num_parametros_actual = 0;
 int tipo_actual;
 int clase_actual;
 int tipo_funcion;
-int tamanio_vector_actual;
-int pos_variable_local_actual;
-int etiqueta;
-int num_argumentos_funcion;
-int retorno_funcion;
+int tamanio_vector_actual = 1; /* tamanio */
+int pos_variable_local_actual = 0; /* posicion */
+int etiqueta = 0;
+int num_argumentos_funcion = 0;
+int retorno_funcion = 0;
+int num_variables_locales_actual = 0; /* num_total_varlocs */
 int en_llamada_a_funcion; /*1 si se esta dentro de los parentesis de una funcion. 0 si se esta fuera*/
 TablaSimbolos *tabla;
 %}
@@ -83,6 +86,8 @@ TablaSimbolos *tabla;
 %type <atributos> while
 %type <atributos> elemento_vector
 %type <atributos> funcion
+%type <atributos> fn_declaration
+%type <atributos> fn_name
 
 %left TOK_IGUAL TOK_MENORIGUAL TOK_MENOR TOK_MAYORIGUAL TOK_MAYOR TOK_DISTINTO
 %left TOK_AND TOK_OR
@@ -159,7 +164,7 @@ clase_vector: TOK_ARRAY tipo TOK_CORCHETEIZQUIERDO constante_entera TOK_CORCHETE
                 fprintf(yyout,";R15:\t<clase_vector> ::= array <tipo> [ <constante_entera> ]\n");
                 tamanio_vector_actual = $4.valor_entero;
 
-                if(tamanio_vector_actual <= 0 || tamanio_vector_actual > MAX_TAMANIO_VECTOR) {
+                if(tamanio_vector_actual < 1 || tamanio_vector_actual > MAX_TAMANIO_VECTOR) {
                   printf("****Error semantico en lin %ld: El tamanyo del vector <nombre_vector> excede los limites permitidos (1,64).",yylin);
                   eliminar_tabla(tabla);
                   return -1;
@@ -177,65 +182,70 @@ funciones: funcion funciones
            { fprintf(yyout,";R20:\t<funciones> ::= <funcion> <funciones>\n"); }
          |
            { fprintf(yyout,";R21:\t<funciones> ::= \n"); }
-          
          ;
 
-funcion: TOK_FUNCTION tipo identificador TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO
-         TOK_LLAVEIZQUIERDA declaraciones_funcion sentencias TOK_LLAVEDERECHA
-         { fprintf(yyout,";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");
-           
-           if (busqueda_elemento(tabla, $3.nombre) == NULL) {
-             strcpy($$.nombre, $3.nombre);
-             
-             apertura_ambito(tabla, $3.nombre, VARIABLE, tipo_actual,
-                                    clase_actual, tamanio_vector_actual, num_argumentos_funcion,
-                                    pos_variable_local_actual, 0, num_argumentos_funcion);
-            
-             tamanio_vector_actual = 1;
-             //num_total_varlocs = 0;
-             pos_variable_local_actual = 0;
-             num_argumentos_funcion = 0;
-             retorno_funcion = 0;
-             //tipo_funcion = tipo;
-           }
-
-           else {
-             printf("****Error semantico en lin %ld: Declaracion duplicada\n", yylin);
-             eliminar_tabla(tabla);
-             return -1;
-           }
-
-           Elemento *elemento1;
-           elemento1 = busqueda_elemento(tabla, $3.nombre);
-
-           if (elemento1 == NULL) {
-             eliminar_tabla(tabla);
-             return -1;
-           }
-
-           elemento1->num_total_parametros = num_total_parametros;
-           elemento1->num_total_varlocs = num_total_varlocs;
-           elemento1->clase = tipo_funcion;
+funcion: fn_declaration sentencias TOK_LLAVEDERECHA
+         {
+           fprintf(yyout,";R22:\t<funcion> ::= function <tipo> <identificador> ( <parametros_funcion> ) { <declaraciones_funcion> <sentencias> }\n");
 
            if(retorno_funcion < 1) {
-             printf("****Error semantico en lin %ld: Funcion %s sin sentencia de retorno.\n", yylin, $3.nombre);
+             printf("****Error semantico en lin %ld: Funcion %s sin sentencia de retorno.\n", yylin, $1.nombre);
              eliminar_tabla(tabla);
              return -1;
            } 
            cierre_ambito(tabla);
            /*Guardamos la informacion en el simbolo de la tabla global*/
-           Elemento *elemento2;
-           elemento2 = busqueda_elemento(tabla, $3.nombre);
-           if(elemento2 == NULL) {
+           Elemento *elemento;
+           elemento = busqueda_elemento(tabla, $1.nombre);
+           if(elemento == NULL) {
              eliminar_tabla(tabla);
              return -1;
            }
            
-           elemento2->num_total_parametros = num_total_parametros;
-           elemento2->tipo = tipo_funcion;
-           num_total_parametros = 0;
-           num_total_varlocs = 0;
+           elemento->num_total_parametros = num_parametros_actual;
+           elemento->tipo = tipo_actual;
+           num_parametros_actual = 0;
+           num_variables_locales_actual = 0;
            pos_variable_local_actual = 0;
+         }
+       ;
+
+fn_declaration: fn_name TOK_PARENTESISIZQUIERDO parametros_funcion TOK_PARENTESISDERECHO
+                TOK_LLAVEIZQUIERDA declaraciones_funcion
+                {
+                  Elemento* elemento;
+                  elemento = busqueda_elemento(tabla, $1.nombre);
+                  if (elemento == NULL) {
+                    eliminar_tabla(tabla);
+                    return -1;
+                  }
+
+                  elemento->num_total_parametros = num_parametros_actual;
+                  elemento->num_total_varlocs = num_variables_locales_actual;
+                  elemento->clase = tipo_actual;
+                  strcpy($$.nombre, $1.nombre);
+                  declararFuncion(yyout, $1.nombre, num_variables_locales_actual);
+                }
+              ;
+
+fn_name: TOK_FUNCTION tipo TOK_IDENTIFICADOR
+         {
+           if (busqueda_elemento(tabla, $3.nombre) == NULL) {
+             strcpy($$.nombre, $3.nombre);
+             apertura_ambito(tabla, $3.nombre, VARIABLE, tipo_actual,
+                             clase_actual, tamanio_vector_actual, num_argumentos_funcion,
+                             pos_variable_local_actual, 0, num_argumentos_funcion);
+             tamanio_vector_actual = 1;
+             num_variables_locales_actual = 0;
+             pos_parametro_actual = 0;
+             num_parametros_actual = 0;
+             retorno_funcion = 0;
+           }
+           else {
+             printf("****Error semantico en lin %ld: Declaracion duplicada\n", yylin);
+             eliminar_tabla(tabla);
+             return -1;
+           }
          }
        ;
 
@@ -251,8 +261,12 @@ resto_parametros_funcion: TOK_PUNTOYCOMA parametro_funcion resto_parametros_func
                           { fprintf(yyout,";R26:\t<resto_parametros_funcion> ::= \n"); } 
                         ;
 
-parametro_funcion: tipo identificador
-                   { fprintf(yyout,";R27:\t<parametro_funcion> ::= <tipo> <identificador>\n"); }
+parametro_funcion: tipo idpf
+                   { 
+                     fprintf(yyout,";R27:\t<parametro_funcion> ::= <tipo> <identificador>\n");
+                     pos_parametro_actual++;
+                     num_parametros_actual++;
+                   }
                  ;
 
 declaraciones_funcion: declaraciones
@@ -290,10 +304,59 @@ bloque: condicional
       ;
 
 asignacion: identificador TOK_ASIGNACION exp
-            { fprintf(yyout,";R43:\t<asignacion> ::= <identificador> = <exp>\n"); }
+            { fprintf(yyout,";R43:\t<asignacion> ::= <identificador> = <exp>\n");
+              Elemento *elemento;
+              elemento = busqueda_elemento(tabla, $1.nombre);
+              if(elemento==NULL) {
+                printf("****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $1.nombre);
+                eliminar_tabla(tabla);
+                return -1;  
+              }
+              if(elemento->categoria == VECTOR){
+                printf("****Error semantico en lin %ld: Asignacion incompatible.\n", yylin);
+                eliminar_tabla(tabla);
+                return -1;
+              }
+              if(elemento->categoria == FUNCION){
+                printf("****Error semantico en lin %ld: Asignacion incompatible.\n", yylin);
+                eliminar_tabla(tabla);
+                return -1;
+              }
+              if(elemento->tipo != $3.tipo){
+                printf("****Error semantico en lin %ld: Asignacion incompatible.\n", yylin);
+                eliminar_tabla(tabla);
+                return -1;
+              }
+              if(tabla->ambito == AMBITO_GLOBAL) {
+                asignar(yyout, $1.nombre, $3.es_direccion);
+              }
+              else {
+                escribirVariableLocal(yyout, elemento->pos_var_loc);
+                asignarDestinoEnPila(yyout, $3.es_direccion);
+              }   
+              }
           | elemento_vector TOK_ASIGNACION exp
-            { fprintf(yyout,";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n"); }
+            { fprintf(yyout,";R44:\t<asignacion> ::= <elemento_vector> = <exp>\n");
+              Elemento *elemento;
+              elemento = busqueda_elemento(tabla, $1.nombre);
+              if(elemento==NULL) {
+                printf("****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $1.nombre);
+                eliminar_tabla(tabla);
+                return -1;
+              }
+              if($1.tipo != $3.tipo) {
+                printf("****Error semantico en lin %ld: Asignacion incompatible.\n", yylin);
+                eliminar_tabla(tabla);
+                return -1;
+              }
+              char e[MAX_TAMANIO_INT];
+              sprintf(e, "%d", $1.valor_entero);
+              escribir_operando(yyout, e, 0);
+              escribir_elemento_vector(yyout, elemento->nombre, elemento->tamano, $3.es_direccion); 
+              asignarDestinoEnPila(yyout, $3.es_direccion);
+            }
           ;
+
 
 elemento_vector: identificador TOK_CORCHETEIZQUIERDO exp TOK_CORCHETEDERECHO
                  { fprintf(yyout,";R48:\t<elemento_vector> ::= <identificador> [ <exp> ]\n");
@@ -375,7 +438,7 @@ lectura: TOK_SCANF identificador
            Elemento *elemento;
            elemento = busqueda_elemento(tabla, $2.nombre);
 
-           if(elemento == NULL){
+           if(elemento == NULL) {
              printf("****Error semantico en lin %ld: Acceso a variable no declarada (%s).\n", yylin, $2.nombre);
              eliminar_tabla(tabla);
              return -1;
@@ -526,7 +589,7 @@ exp: exp TOK_MAS exp
        $$.tipo = elemento->tipo;
        $$.es_direccion = 1;
        if (elemento->clase == PARAMETRO) {
-         escribirParametro(yyout, elemento->pos_par, num_total_parametros);
+         escribirParametro(yyout, elemento->pos_par, num_parametros_actual);
        }
        else if (elemento->clase == VARIABLE) {
          if (tabla->ambito == AMBITO_LOCAL) {
@@ -582,12 +645,13 @@ lista_expresiones: exp resto_lista_expresiones
 resto_lista_expresiones: TOK_COMA exp resto_lista_expresiones 
                          {
                            fprintf(yyout,";R91:\t<resto_lista_expresiones> ::= , <exp>  <resto_lista_expresiones> \n");
+                           if(en_llamada_a_funcion == 1) {
+                              num_argumentos_funcion++;
+                         }
                          }
                        |
                          { fprintf(yyout,";R92:\t<resto_lista_expresiones> ::= \n");
-                         if(en_llamada_a_funcion == 1) {
-                           num_argumentos_funcion++;
-                         } } 
+                          } 
                        ;
 
 comparacion: exp TOK_IGUAL exp
@@ -724,8 +788,8 @@ identificador: TOK_IDENTIFICADOR
                  fprintf(yyout,";R108:\t<identificador> ::= TOK_IDENTIFICADOR\n");
                  // Esto de aquí hay que cambiarlo
                  if(insercion_elemento(tabla, $1.nombre, VARIABLE, tipo_actual,
-                                       clase_actual, tamanio_vector_actual, num_total_parametros,
-                                       pos_variable_local_actual, 0, num_total_varlocs) == -1) {
+                                       clase_actual, tamanio_vector_actual, num_parametros_actual,
+                                       pos_variable_local_actual, 0, num_variables_locales_actual) == -1) {
                    printf("****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
                    eliminar_tabla(tabla);
                    return -1;
@@ -733,6 +797,23 @@ identificador: TOK_IDENTIFICADOR
                  pos_variable_local_actual++;
                }
              ;
+
+idpf: TOK_IDENTIFICADOR
+      {
+        if(busqueda_elemento(tabla, $1.nombre) == NULL) {
+          if(insercion_elemento(tabla, $1.nombre, PARAMETRO, tipo_actual,
+                                ESCALAR, 1, 0, pos_variable_local_actual, 0, 0) == -1) {
+            eliminar_tabla(tabla);
+            return -1;
+          }
+        }
+        else {
+          printf("****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
+          eliminar_tabla(tabla);
+          return -1;
+        }
+      }
+    ;
 
 %%
 
