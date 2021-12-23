@@ -283,7 +283,7 @@ idpf: TOK_IDENTIFICADOR
       {
         if(busqueda_elemento(tabla, $1.nombre) == NULL) {
           if(insercion_elemento(tabla, $1.nombre, PARAMETRO, ESCALAR,
-                                tipo_actual, 1, 0, pos_parametro_actual, 0, 0) == -1) {
+                                tipo_actual, 1, 0, 0, 0, pos_parametro_actual) == -1) {
             eliminar_tabla(tabla);
             return -1;
           }
@@ -352,7 +352,6 @@ asignacion: TOK_IDENTIFICADOR TOK_ASIGNACION exp
               }
 
               else {
-                // ERROR AQUI
                 escribirVariableLocal(yyout, elemento->pos_par);
                 asignarDestinoEnPila(yyout, $3.es_direccion);
               }
@@ -878,8 +877,8 @@ identificador: TOK_IDENTIFICADOR
                    pos_variable_local_actual++;
                    num_variables_locales_actual++;
                    if(insercion_elemento(tabla, $1.nombre, VARIABLE, clase_actual,
-                                         tipo_actual, tamanio_vector_actual, num_parametros_actual,
-                                         pos_variable_local_actual, 0, num_variables_locales_actual) == -1) {
+                                         tipo_actual, tamanio_vector_actual, 0, num_variables_locales_actual,
+                                         num_parametros_actual, pos_variable_local_actual) == -1) {
                      printf("****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
                      eliminar_tabla(tabla);
                      return -1;
@@ -887,8 +886,8 @@ identificador: TOK_IDENTIFICADOR
                  }
                  if (tabla->ambito == AMBITO_GLOBAL) {
                    if(insercion_elemento(tabla, $1.nombre, VARIABLE, clase_actual,
-                                         tipo_actual, tamanio_vector_actual, num_parametros_actual,
-                                         pos_variable_local_actual, 0, num_variables_locales_actual) == -1) {
+                                         tipo_actual, tamanio_vector_actual, 0, num_variables_locales_actual,
+                                         num_parametros_actual, pos_variable_local_actual) == -1) {
                      printf("****Error semantico en lin %ld: Declaracion duplicada.\n", yylin);
                      eliminar_tabla(tabla);
                      return -1;
