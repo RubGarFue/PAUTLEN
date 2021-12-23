@@ -8,6 +8,8 @@
  * @copyright Copyright (c) 2021
  * 
  */
+#include <stdio.h>
+#include <string.h>
 #include "tabla_simbolos.h"
 
 TablaSimbolos* crear_tabla() {
@@ -42,7 +44,9 @@ Elemento* crear_elemento(char *nombre, int categoria, int clase, int tipo, int t
         return NULL;
     }
 
-    elemento->nombre = nombre;
+    elemento->nombre = (char*) malloc(sizeof(char) * (strlen(nombre) + 1));
+
+    strcpy(elemento->nombre, nombre);
     elemento->categoria = categoria;
     elemento->clase = clase;
     elemento->tipo = tipo;
@@ -60,6 +64,7 @@ int insercion_elemento(TablaSimbolos* tabla, char *nombre, int categoria, int cl
                        int tamano, int num_var_loc, int pos_var_loc, int num_par, int pos_par) {
 
     Elemento* elemento = NULL;
+    Elemento* elemento2 = NULL;
 
     if (tabla->ambito == AMBITO_GLOBAL) {
         HASH_FIND_STR(*(tabla->global), nombre, elemento);
@@ -163,6 +168,7 @@ void eliminar_tabla(TablaSimbolos *tabla) {
 
     HASH_ITER(hh, *(tabla->global), elemento, tmp) {
         HASH_DEL(*(tabla->global), elemento);
+        free(elemento->nombre);
         free(elemento);
     }
 

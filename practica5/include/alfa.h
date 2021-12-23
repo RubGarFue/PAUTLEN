@@ -10,8 +10,8 @@
 #define FUNCION 3
 
 
-#define INT 1
-#define BOOLEAN 2
+#define INT 0
+#define BOOLEAN 1
 
 #define MAX_LONG_ID 100
 #define MAX_TAMANIO_VECTOR 64

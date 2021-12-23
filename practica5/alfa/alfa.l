@@ -57,7 +57,7 @@ MAYOR   ">"
 TRUE    "true"
 FALSE   "false"
 IDENTIFICADOR   [a-zA-Z][a-zA-Z0-9]{0,99}
-CONSTANTE_ENTERA    [0-9]
+CONSTANTE_ENTERA    [0-9]+
 ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 %%
 {ESPACIO}   { yycol += yyleng; }
@@ -99,7 +99,7 @@ ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 {MAYOR}                     { yycol += yyleng; fprintf(yyout, ";D:\t>\n"); return TOK_MAYOR; }
 {TRUE}                      { yycol += yyleng; fprintf(yyout, ";D:\ttrue\n"); return TOK_TRUE; }
 {FALSE}                     { yycol += yyleng; fprintf(yyout, ";D:\tfalse\n"); return TOK_FALSE; }
-[a-zA-Z][a-zA-Z0-9]{0,99}   { yycol += yyleng; strcpy(yylval.atributos.nombre, yytext); return TOK_IDENTIFICADOR; }
-[0-9]                       { yycol += yyleng; yylval.atributos.valor_entero = atoi( yytext ); return TOK_CONSTANTE_ENTERA; }
+[a-zA-Z][a-zA-Z0-9]{0,99}   { yycol += yyleng; strcpy(yylval.atributos.nombre, yytext); fprintf(yyout, ";D:\t%s\n", yytext); return TOK_IDENTIFICADOR; }
+[0-9]+                      { yycol += yyleng; yylval.atributos.valor_entero = atoi( yytext ); fprintf(yyout, ";D:\t%s\n", yytext); return TOK_CONSTANTE_ENTERA; }
 {ERROR}                     { yycol += yyleng; fprintf(stderr, "****Error en linea (Flex) %ld: \n", yylin); yy_morph_error = 1; return TOK_ERROR; }
 %%

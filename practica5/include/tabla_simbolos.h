@@ -22,10 +22,10 @@
  */
 typedef struct _Elemento {
     char *nombre;
-    int categoria;
-    int clase;
-    int tipo;
-    int tamano;
+    int categoria;  /* variable, parametro o funcion */
+    int clase;      /* escalar o vector */
+    int tipo;       /* entero o booleano */
+    int tamano;     /* numero de elementos de un vector */
     int num_var_loc;
     int pos_var_loc;
     int num_par;

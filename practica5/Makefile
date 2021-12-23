@@ -9,11 +9,8 @@ all:
 	mkdir -p ./obj
 	@make compilador
 
-compilador: y.tab.o lex.yy.o compilador.o tabla_simbolos.o
-	$(CC) -o compilador ./obj/y.tab.o ./obj/lex.yy.o ./obj/compilador.o ./obj/tabla_simbolos.o
-
-compilador.o: ./src/compilador.c
-	$(CC) $(CFLAGS) -c -o ./obj/compilador.o ./src/compilador.c
+compilador: y.tab.o lex.yy.o tabla_simbolos.o
+	$(CC) $(CFLAGS) ./src/compilador.c ./obj/y.tab.o ./obj/lex.yy.o ./obj/tabla_simbolos.o ./src/generacion.c -o compilador
 
 tabla_simbolos.o: ./src/tabla_simbolos.c ./include/tabla_simbolos.h
 	$(CC) $(CFLAGS) -c ./src/tabla_simbolos.c
@@ -36,8 +33,11 @@ lex.yy.c: ./alfa/alfa.l ./include/y.tab.h ./include/alfa.h ./include/generacion.
 
 clean:
 	@echo "Cleaning:"
-	@rm -rf ./obj
+	@rm -rf ./obj/lex.yy.o
+	@rm -rf ./obj/y.tab.o
+	@rm -rf ./obj/tabla_simbolos.o
 	@rm -rf ./include/y.tab.h
 	@rm -rf ./src/y.tab.c
 	@rm -rf ./src/lex.yy.c
 	@rm -rf y.output
+	@rm -rf compilador
