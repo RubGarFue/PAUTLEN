@@ -9,37 +9,6 @@
  * 
  */
 #include "tabla_simbolos.h"
-#include "uthash.h" 
-
-/**
- * @brief TablaSimbolos
- * 
- * Esta estructura define una tabla de símbolos 
- */
-struct _TablaSimbolos {
-    Elemento** global;
-    Elemento** local;
-    int ambito;
-};
-
-/**
- * @brief Elemento
- * 
- * Esta estructura define un elemento de la tabla de símbolos
- */
-struct _Elemento {
-    char *nombre;
-    int categoria;
-    int clase;
-    int tipo;
-    int tamano;
-    int num_var_loc;
-    int pos_var_loc;
-    int num_par;
-    int pos_par;
-    UT_hash_handle hh;
-};
-
 
 TablaSimbolos* crear_tabla() {
     TablaSimbolos* tabla = NULL;

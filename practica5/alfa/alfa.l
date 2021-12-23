@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#include "alfa.h"
 #include "y.tab.h"
 
 #define _ERROR_HEAD "****Error en [lin %ld, col %ld]: "
@@ -7,7 +8,7 @@
 #define _ERROR_ID   "identificador demasiado largo (%s)\n" 
 
 void _print_token(FILE *out) {
-    fprintf(out, ";D:\t%s\n", yytext)
+    fprintf(out, ";D:\t%s\n", yytext);
 }
 extern FILE * yyout;
 long yylin = 1;
@@ -98,7 +99,7 @@ ERROR   [a-zA-Z][a-zA-Z0-9]{100,}|.
 {MAYOR}                     { yycol += yyleng; fprintf(yyout, ";D:\t>\n"); return TOK_MAYOR; }
 {TRUE}                      { yycol += yyleng; fprintf(yyout, ";D:\ttrue\n"); return TOK_TRUE; }
 {FALSE}                     { yycol += yyleng; fprintf(yyout, ";D:\tfalse\n"); return TOK_FALSE; }
-[a-zA-Z][a-zA-Z0-9]{0,99}   { yycol += yyleng; yylval.atributos.nombre = yytext[0]; return TOK_IDENTIFICADOR; }
+[a-zA-Z][a-zA-Z0-9]{0,99}   { yycol += yyleng; strcpy(yylval.atributos.nombre, yytext); return TOK_IDENTIFICADOR; }
 [0-9]                       { yycol += yyleng; yylval.atributos.valor_entero = atoi( yytext ); return TOK_CONSTANTE_ENTERA; }
 {ERROR}                     { yycol += yyleng; fprintf(stderr, "****Error en linea (Flex) %ld: \n", yylin); yy_morph_error = 1; return TOK_ERROR; }
 %%

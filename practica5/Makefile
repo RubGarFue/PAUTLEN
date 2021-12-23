@@ -7,13 +7,13 @@ CFLAGS= -g -I./src -I./include -I./obj
 all:
 	mkdir -p ./include
 	mkdir -p ./obj
-	@make alfa
+	@make compilador
 
-alfa: y.tab.o lex.yy.o alfa.o tabla_simbolos.o
-	$(CC) -o alfa ./obj/y.tab.o ./obj/lex.yy.o ./obj/alfa.o ./obj/tabla_simbolos.o
+compilador: y.tab.o lex.yy.o compilador.o tabla_simbolos.o
+	$(CC) -o compilador ./obj/y.tab.o ./obj/lex.yy.o ./obj/compilador.o ./obj/tabla_simbolos.o
 
-alfa.o: ./src/alfa.c
-	$(CC) $(CFLAGS) -c -o ./obj/alfa.o ./src/alfa.c
+compilador.o: ./src/compilador.c
+	$(CC) $(CFLAGS) -c -o ./obj/compilador.o ./src/compilador.c
 
 tabla_simbolos.o: ./src/tabla_simbolos.c ./include/tabla_simbolos.h
 	$(CC) $(CFLAGS) -c ./src/tabla_simbolos.c
@@ -30,13 +30,14 @@ y.tab.c: ./alfa/alfa.y
 	mv y.tab.c ./src
 	mv y.tab.h ./include
 
-lex.yy.c: ./alfa/alfa.l ./include/y.tab.h ./include/tabla_simbolos.h ./include/generacion.h ./include/alfa.h
+lex.yy.c: ./alfa/alfa.l ./include/y.tab.h ./include/alfa.h ./include/generacion.h ./include/tabla_simbolos.h
 	flex ./alfa/alfa.l
 	mv lex.yy.c ./src
 
 clean:
 	@echo "Cleaning:"
 	@rm -rf ./obj
+	@rm -rf ./include/y.tab.h
 	@rm -rf ./src/y.tab.c
 	@rm -rf ./src/lex.yy.c
 	@rm -rf y.output

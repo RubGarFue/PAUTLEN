@@ -13,8 +13,36 @@
 #define AMBITO_GLOBAL 0
 #define AMBITO_LOCAL 1
 
-typedef struct _TablaSimbolos TablaSimbolos;
-typedef struct _Elemento Elemento;
+#include "uthash.h"
+
+/**
+ * @brief Elemento
+ * 
+ * Esta estructura define un elemento de la tabla de símbolos
+ */
+typedef struct _Elemento {
+    char *nombre;
+    int categoria;
+    int clase;
+    int tipo;
+    int tamano;
+    int num_var_loc;
+    int pos_var_loc;
+    int num_par;
+    int pos_par;
+    UT_hash_handle hh;
+} Elemento;
+
+/**
+ * @brief TablaSimbolos
+ * 
+ * Esta estructura define una tabla de símbolos 
+ */
+typedef struct _TablaSimbolos {
+    Elemento** global;
+    Elemento** local;
+    int ambito;
+} TablaSimbolos;
 
 /**
  * @brief crea una nueba tabla de símbolos
